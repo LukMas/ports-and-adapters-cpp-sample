@@ -17,7 +17,7 @@ int main()
 
 
     ConsoleView console_view;
-    SimulatedArm arm;
+    SimulatedArm arm(queue);
     // monitoring
 
     Watchdog watchdog(queue);
@@ -27,9 +27,6 @@ int main()
 
     // allows the watchdog to notify the kiosk
     kiosk.addStatusListener(&watchdog);
-
-    // allows the console view to obtain the arm information
-    arm.addTelemetryListener(&console_view);
 
     // starting threads
     // Thread 1: Input (Blocks on read())

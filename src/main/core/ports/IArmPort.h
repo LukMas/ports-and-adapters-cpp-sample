@@ -6,12 +6,21 @@
 #define GRABSTATION_ARMPORT_H
 #pragma once
 
-class IArmPort
-{
+struct Coordinate {
+    int x;
+    int y;
+};
+
+class IArmPort {
 public:
     virtual ~IArmPort() = default;
 
-    // The Core calls this to start the journey
-    virtual void moveTo(int targetX, int targetY) = 0;
+    // Commands
+    virtual void setDestination(const Coordinate& destination) = 0;
+    virtual void emergencyStop() = 0;
+
+    // Queries
+    [[nodiscard]] virtual Coordinate getCurrentPosition() const = 0;
+    [[nodiscard]] virtual bool hasReachedTarget() const = 0;
 };
 #endif //GRABSTATION_ARMPORT_H

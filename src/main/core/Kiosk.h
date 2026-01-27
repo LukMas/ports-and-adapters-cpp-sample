@@ -14,14 +14,14 @@
 #include <vector>
 
 #include "CommandQueue.h"
-#include "IArmTelemetry.h"
 #include "IStatusListener.h"
 #include "states/IKioskState.h"
 #include "ports/IArmPort.h"
 #include "ports/IViewPort.h"
+#include "states/States.h"
 
 
-class Kiosk : public IArmTelemetry
+class Kiosk
 {
 private:
     CommandQueue& m_queue;
@@ -39,11 +39,6 @@ public:
         m_statusListeners.push_back(l);
     }
 
-    void onPositionChanged(int x, int y) override
-    {
-        // Logic to check if we arrived at destination
-    }
-
     [[nodiscard]] IViewPort& getView() const
     {
         return m_view;
@@ -56,7 +51,7 @@ public:
         // I don't pass an empty commands
         if (cmd.has_value())
         {
-            auto next = m_state->updateState(*this, cmd);
+            auto next = m_state->update(*this, cmd);
             if (next)
             {
                 auto oldState =
@@ -74,7 +69,7 @@ public:
         }
     }
 
-    ~Kiosk() override;
+    ~Kiosk();
 };
 
 #endif

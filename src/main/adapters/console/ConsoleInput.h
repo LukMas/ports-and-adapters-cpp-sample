@@ -3,7 +3,6 @@
 
 #include "CommandQueue.h"
 #include "ConsoleState.h"
-z
 
 class ConsoleInput {
 public:

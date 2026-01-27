@@ -12,12 +12,6 @@
 
 class Kiosk; // Forward declaration
 
-class IKioskState
-{
-public:
-    virtual ~IKioskState() = default;
-    virtual std::unique_ptr<IKioskState> updateState(Kiosk& context, std::optional<std::string> cmd) = 0;
-    [[nodiscard]] virtual std::string getName() const = 0;
-};
+
 
 #endif //GRABSTATION_KIOSKSTATE_H

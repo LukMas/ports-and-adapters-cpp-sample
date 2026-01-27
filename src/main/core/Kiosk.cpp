@@ -3,7 +3,7 @@
 #include "Kiosk.h"
 #include "states/IKioskState.h"
 #include "CommandQueue.h"
-#include "states/IdleState.h"
+#include "states/States.h"
 
 // void Kiosk::initializeGrid(int rows, int cols) {
 //     grid.resize(rows, std::vector<Slot>(cols, {"Empty", 0}));

@@ -11,10 +11,8 @@ add_library(kiosk_logic_lib STATIC
         ports/IViewPort.h
         ports/IArmPort.h
         states/IKioskState.h
-        states/IdleState.h
-        states/IdleState.cpp
-        states/WaitingState.h
-        states/WaitingState.cpp
+        states/States.h
+        states/States.cpp
         #        ports/WaitingForCoordsState.cpp
 #        ports/WaitingForCoordsState.h
 )

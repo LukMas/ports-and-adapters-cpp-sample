@@ -11,7 +11,6 @@
 #include <optional>
 
 #include "ports/IViewPort.h"
-#include "IArmTelemetry.h"
 #include "IStatusListener.h"
 
 enum class MachineStatus;
@@ -24,7 +23,7 @@ class KioskSnapshot
 
 };
 
-class ConsoleView : public IViewPort, public IArmTelemetry, public IStatusListener
+class ConsoleView : public IViewPort, public IStatusListener
 {
 private:
     std::mutex m_mtx;
@@ -50,14 +49,6 @@ public:
         std::lock_guard<std::mutex> l(m_mtx);
         this->m_state = status;
     };
-
-
-    void onPositionChanged(int x, int y) override
-    {
-        std::lock_guard<std::mutex> l(m_mtx);
-        m_x = x;
-        m_y = y;
-    }
 
     void onStatusChanged(MachineStatus s) override
     {
