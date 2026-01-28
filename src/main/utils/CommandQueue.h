@@ -11,6 +11,10 @@
 #include <string>
 #include <optional>
 
+/**
+ * A thread safe queue, used to push commands to any
+ * handler.
+ */
 class CommandQueue
 {
 private:
@@ -20,6 +24,11 @@ private:
 public:
     CommandQueue() = default;
 
+    /**
+     * A thread safe function used to push a command
+     * string to the queue.
+     * @param cmd the string with the command
+     */
     void push(const std::string& cmd)
     {
         // lock_guard automatically unlocks when the function ends
@@ -27,6 +36,11 @@ public:
         queue.push(cmd);
     }
 
+    /**
+     * A thread safe function that returns the string previously
+     * pushed, if any, or a null pointer if nothing is found.
+     * @return the command string, or a null pointer
+     */
     std::optional<std::string> try_pop()
     {
         std::lock_guard lock(mtx);

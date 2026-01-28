@@ -1,9 +1,12 @@
 #ifndef GRABSTATION_CONSOLEINPUT_H
-#define CONSOLE_INPUT_H
 
 #include "CommandQueue.h"
 #include "ConsoleState.h"
 
+/**
+ * Interface used to catch the user input and push it in
+ * the command queue.
+ */
 class ConsoleInput {
 public:
     ConsoleInput(CommandQueue& q, ConsoleState& s) : m_queue(q), m_state(s) {}

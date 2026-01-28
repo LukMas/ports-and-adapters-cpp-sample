@@ -6,6 +6,10 @@
 #define GRABSTATION_ISTATUSLISTENER_H
 
 #pragma once
+/**
+ * The enum that is used to share the status of the
+ * machine.
+ */
 enum class MachineStatus { IDLE, PROCESSING, WAITING };
 
 inline std::string to_string(MachineStatus machineStatus)
@@ -28,6 +32,10 @@ inline std::string to_string(MachineStatus machineStatus)
     return result;
 }
 
+/**
+ * The interface that defines a status listener. It is used
+ * to inform any
+ */
 class IStatusListener
 {
 public:

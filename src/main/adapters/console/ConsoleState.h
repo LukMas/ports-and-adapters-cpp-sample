@@ -9,9 +9,17 @@
 #include <mutex>
 #include <atomic>
 
+/**
+ * Structure used to carry the current input and
+ * the status of the machine.
+ */
 struct ConsoleState {
-    std::string currentInput;  // The characters typed so far
+    /**
+     * Used to regulate the access
+     */
     std::mutex mtx;            // Protects the string
+
+    std::string currentInput;  // The characters typed so far
     std::atomic<bool> running{true}; // Controls the loops
 };
 

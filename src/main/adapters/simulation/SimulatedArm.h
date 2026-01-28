@@ -10,28 +10,24 @@
 #include "ports/IArmPort.h"
 #include <thread>
 
+/**
+ * The class implements the IArmPort and simulates the presence of a real
+ * arm that moves to the selected position.
+ *
+ */
 class SimulatedArm : public IArmPort
 {
 private:
-    CommandQueue& m_queue;
     Coordinate m_destination {0,0}, m_currentPosition{0,0};
     std::mutex m_mutex;
     std::shared_mutex m_shared_mutex;
 
 public:
-    explicit SimulatedArm(CommandQueue& queue) : m_queue(queue)
-    {
-    }
+    explicit SimulatedArm()= default;
 
     void setDestination(const Coordinate& destination) override
     {
         m_destination = destination;
-    }
-
-    void emergencyStop() override
-    {
-        m_mutex.lock();
-        m_queue.push("EMERGENCY_STOP");
     }
 
     [[nodiscard]] Coordinate getCurrentPosition() const override

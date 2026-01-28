@@ -13,13 +13,16 @@ int main()
     CommandQueue queue;
     ConsoleState state;
 
+    // I define the handler of the input using the console
     ConsoleInput inputHandler(queue, state);
 
-
+    // I define the output using the console
     ConsoleView console_view;
-    SimulatedArm arm(queue);
-    // monitoring
 
+    // The arm that simulates the movement to grab the object
+    SimulatedArm arm;
+
+    // The monitoring service
     Watchdog watchdog(queue);
 
     // main logic
@@ -29,7 +32,8 @@ int main()
     kiosk.addStatusListener(&watchdog);
 
     // starting threads
-    // Thread 1: Input (Blocks on read())
+    //
+    // Input thread (Blocks on read())
     std::thread input_thread(&ConsoleInput::run, &inputHandler);
 
     std::thread watchdog_thread([&]()
@@ -41,12 +45,12 @@ int main()
         }
     });
 
-
+    // Ui thread used to show the status of the kiosk
     std::thread ui_thread([&]()
     {
         while (state.running)
         {
-            console_view.render(state, kiosk);
+            console_view.render(state);
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
     });

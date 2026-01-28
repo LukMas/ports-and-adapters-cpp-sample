@@ -14,8 +14,8 @@ std::unique_ptr<IKioskState> IdleState::update(Kiosk& context, std::optional<std
 {
     if (cmd.value() == "START")
     {
-        context.getView().updateDisplay("System Active. Please enter item coordinates.");
-        context.getView().displayState(this->getName());
+        context.getView().notifyState("System Active. Please enter item coordinates.");
+        context.getView().notifyState(this->getName());
 
         context.notifyStatus(MachineStatus::WAITING);
 
@@ -32,18 +32,17 @@ std::unique_ptr<IKioskState> IdleState::update(Kiosk& context, std::optional<std
 
 std::unique_ptr<IKioskState> WaitingState::update(Kiosk& context, std::optional<std::string> cmd)
 {
+    if (cmd.value() == "IDLE")
     {
-        if (cmd.value() == "IDLE")
-        {
-            // for now I do nothing, so the watchdog kiks in
-            return std::make_unique<IdleState>();
-        }
-
-        return nullptr;
+        // for now I do nothing, so the watchdog kiks in
+        return std::make_unique<IdleState>();
     }
+
+    return nullptr;
 }
+
 
 [[nodiscard]] std::string WaitingState::getName() const
 {
-    return "IDLE";
+    return "WAITING";
 }
