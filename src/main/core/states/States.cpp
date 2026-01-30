@@ -10,14 +10,15 @@
 //     std::unique_ptr<IKioskState> update(Kiosk& context, std::optional<std::string> cmd) override;
 // };
 
-std::unique_ptr<IKioskState> IdleState::update(Kiosk& context, std::optional<std::string> cmd)
+std::unique_ptr<IKioskState> IdleState::update(Kiosk& context, const std::string& cmd)
 {
-    if (cmd.value() == "START")
+    // if the command is START...
+    if (cmd == "START")
     {
-        context.getView().notifyState("System Active. Please enter item coordinates.");
-        context.getView().notifyState(this->getName());
-
-        context.notifyStatus(MachineStatus::WAITING);
+        // ... inform the view with a message
+        context.getView().notifyMessage("System Active. Please enter item coordinates.");
+        // ... and send the new status to all the listeners
+        context.notifyListeners(MachineStatus::WAITING);
 
         return std::make_unique<WaitingState>();
     }
@@ -25,24 +26,20 @@ std::unique_ptr<IKioskState> IdleState::update(Kiosk& context, std::optional<std
     return nullptr;
 }
 
-[[nodiscard]] std::string IdleState::getName() const
+std::unique_ptr<IKioskState> WaitingState::update(Kiosk& context, const std::string& cmd)
 {
-    return "IDLE";
-}
+    std::optional<Coordinate> coordinate = context.generateCoordinates(cmd);
 
-std::unique_ptr<IKioskState> WaitingState::update(Kiosk& context, std::optional<std::string> cmd)
-{
-    if (cmd.value() == "IDLE")
+    if (coordinate.has_value())
     {
-        // for now I do nothing, so the watchdog kiks in
-        return std::make_unique<IdleState>();
+        // ... inform the view with a message,
+        context.getView().notifyMessage("System Moving. The arm is going to the selected position.");
+        // send the new status to all the listeners,
+        context.notifyListeners(MachineStatus::PROCESSING);
+        // and start the movement of the arm
+        context.getArm().setDestination(coordinate.value());
+
     }
 
     return nullptr;
-}
-
-
-[[nodiscard]] std::string WaitingState::getName() const
-{
-    return "WAITING";
 }

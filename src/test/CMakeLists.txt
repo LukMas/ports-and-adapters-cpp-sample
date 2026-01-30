@@ -1,23 +1,28 @@
-# --- REDIRECT OUTPUT TO BIN FOLDER ---
-# This puts the .exe (or Linux binary) in cmake-build-debug/bin
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+# 1. Include the libraries from core
+# (Assuming your src/main/core/CMakeLists.txt defines 'kiosk_logic_lib')
 
-# (Optional) This puts the .lib or .a files in cmake-build-debug/lib
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+add_executable(kiosk_unit_tests
+        test_main.cpp
+        core/test_kiosk.cpp
+)
 
-cmake_minimum_required(VERSION 4.1)
-project(GrabStationTest)
+# 2. Link against your logic and GTest
+target_link_libraries(kiosk_unit_tests
+        PRIVATE
+        kiosk_logic_lib    # Your core logic
+        kiosks_ports_adapters_lib
+        utils_lib
+        GTest::gtest_main
+        GTest::gmock
+)
 
-set(CMAKE_CXX_STANDARD 20)
+# 3. Ensure headers are visible
+target_include_directories(kiosk_unit_tests
+        PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/main/core
+        ${CMAKE_SOURCE_DIR}/src/main/utils
+)
 
-# Ensure headers in the same folder or 'include' folder are found
-include_directories(.)
-
-# --- 1. FIND THE THREADS LIBRARY ---
-# This looks for pthreads on Linux/macOS or the Windows equivalent
-find_package(Threads REQUIRED)
-
-# Target 2: The UI Test
-# Make sure your file is named ui_test.cpp in your folder!
-add_executable(GrabStationTest ui_test.cpp)
-target_link_libraries(UITest PRIVATE Threads::Threads)
+# This registers the tests with CLion's test runner
+include(GoogleTest)
+gtest_discover_tests(kiosk_unit_tests)

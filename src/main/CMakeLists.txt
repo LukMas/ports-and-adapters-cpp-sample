@@ -14,5 +14,6 @@ find_package(Threads REQUIRED)
 # This is where the magic happens. GrabStation "imports" the code from the libs.
 target_link_libraries(GrabStation PRIVATE
         kiosks_ports_adapters_lib
+        kiosk_logic_lib
         Threads::Threads
 )

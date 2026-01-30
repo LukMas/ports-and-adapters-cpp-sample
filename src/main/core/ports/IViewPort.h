@@ -21,7 +21,7 @@ public:
      * the view port.
      * @param status the string with the name of the state
      */
-    virtual void notifyState(const std::string& status) = 0;
+    virtual void notifyMessage(const std::string& status) = 0;
 
     /**
      * The function used to notify eventual errors of the Kiosk.

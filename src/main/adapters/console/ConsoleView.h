@@ -37,7 +37,7 @@ public:
     {
     };
 
-    void notifyState(const std::string& status) override
+    void notifyMessage(const std::string& status) override
     {
         // I lock and just copy the reference, quite fast
         std::lock_guard<std::mutex> l(m_mtx);

@@ -15,10 +15,10 @@
 
 #include "CommandQueue.h"
 #include "IStatusListener.h"
-#include "states/IKioskState.h"
 #include "ports/IArmPort.h"
 #include "ports/IViewPort.h"
-#include "states/States.h"
+
+class IKioskState;
 
 /**
  * The class that handles the logic of the kiosk machine.
@@ -46,6 +46,9 @@ private:
     IArmPort& m_arm;
     std::unique_ptr<IKioskState> m_state;
 
+    int m_rows;
+    int m_cols;
+
     std::vector<IStatusListener*> m_statusListeners;
 
 public:
@@ -56,8 +59,10 @@ public:
      * @param q the instance of the queue
      * @param v the view port
      * @param a the arm port
+     * @param rows number of rows of the kiosk, always bigger than 0
+     * @param cols number of cols of the kioks, always bigger than 0
      */
-    Kiosk(CommandQueue& q, IViewPort& v, IArmPort& a);
+    Kiosk(CommandQueue& q, IViewPort& v, IArmPort& a, int rows, int cols);
 
     void addStatusListener(IStatusListener* l)
     {
@@ -74,38 +79,63 @@ public:
     }
 
     /**
+     * Accessor to obtain the arm port
+     * @return the istance of the arm handler
+     */
+    [[nodiscard]] IArmPort& getArm() const
+    {
+        return m_arm;
+    }
+
+    /**
      * The function that is called at every cycle, it
      * runs the state machine obtained the next command
      * from the queue.
      */
-    void step()
-    {
-        auto cmd = m_queue.try_pop();
-
-        // I don't pass an empty commands
-        if (cmd.has_value())
-        {
-            auto next = m_state->update(*this, cmd);
-            if (next)
-            {
-                auto oldState =
-                    std::exchange(m_state, std::move(next));
-                std::cout << "Transitioned from " << oldState->getName() << std::endl;
-            }
-        }
-    }
+    void step();
 
     /**
      * The function that notifies the status of the machine
      * to every registered observer.
      * @param s the status of the machine
      */
-    void notifyStatus(MachineStatus s) const
+    void notifyListeners(MachineStatus s) const
     {
         for (auto* l : m_statusListeners)
         {
             l->onStatusChanged(s);
         }
+    }
+
+
+    /**
+     * The function validates the input string, that could be something like A1 or B9, and returns the coordinates
+     * that identify a cell in the grid. The values allowed for the string are A-Z for the first char and 1-9 for
+     * the second. After checking that they are correct, the resulting numbers should be verified against the size
+     * of the grid.
+     * @param input a string of 2 chars that identifies a cell, with the first one within A-Z and the second one
+     * within 1-9
+     * @return
+     */
+    [[nodiscard]] std::optional<Coordinate> generateCoordinates(const std::string& input) const
+    {
+        // length 2, first A-Z, second 0-9
+        if (input.length() != 2 || !std::isalpha(input[0]) || !std::isdigit(input[1]))
+        {
+            return std::nullopt;
+        }
+
+        // converting in cell coordinates
+        int x = std::toupper(input[0]) - 'A' + 1;
+        int y = input[1] - '0';
+
+        // cheching against grid size
+        if (x > m_cols || y > m_rows)
+        {
+            return std::nullopt;
+        }
+
+        return  Coordinate(x, y);
     }
 
     ~Kiosk();

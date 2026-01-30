@@ -12,3 +12,16 @@ set(CMAKE_CXX_STANDARD 20)
 
 # Ensure headers in the same folder or 'include' folder are found
 add_subdirectory(src/main)
+
+
+# Testing (Optional toggle)
+option(BUILD_TESTING "Enable unit tests" OFF)
+if(BUILD_TESTING)
+    include(FetchContent)
+    FetchContent_Declare(
+            googletest
+            URL https://github.com/google/googletest/archive/refs/heads/main.zip
+    )
+    FetchContent_MakeAvailable(googletest)
+    add_subdirectory(src/test)
+endif()

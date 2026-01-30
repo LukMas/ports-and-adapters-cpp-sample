@@ -1,5 +1,7 @@
 #ifndef GRABSTATION_CONSOLEINPUT_H
 
+#include <stop_token>
+
 #include "CommandQueue.h"
 #include "ConsoleState.h"
 
@@ -10,7 +12,7 @@
 class ConsoleInput {
 public:
     ConsoleInput(CommandQueue& q, ConsoleState& s) : m_queue(q), m_state(s) {}
-    void run(); // This will be our thread function
+    void run( const std::stop_source& stop_source); // This will be our thread function
 
 private:
     CommandQueue& m_queue;

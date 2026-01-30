@@ -10,6 +10,10 @@
 
 int main()
 {
+    std::stop_source system_shutdown;
+    std::stop_token master_token = system_shutdown.get_token();
+
+
     CommandQueue queue;
     ConsoleState state;
 
@@ -26,7 +30,7 @@ int main()
     Watchdog watchdog(queue);
 
     // main logic
-    Kiosk kiosk(queue, console_view, arm);
+    Kiosk kiosk(queue, console_view, arm, 5, 5);
 
     // allows the watchdog to notify the kiosk
     kiosk.addStatusListener(&watchdog);
@@ -34,21 +38,27 @@ int main()
     // starting threads
     //
     // Input thread (Blocks on read())
-    std::thread input_thread(&ConsoleInput::run, &inputHandler);
-
-    std::thread watchdog_thread([&]()
+    std::jthread input_thread([&input = inputHandler, &system_shutdown, &master_token]()
     {
-        while (state.running)
+        while (!master_token.stop_requested())
         {
-            watchdog.check();
+            input.run(system_shutdown);
+        }
+    });
+
+    std::jthread watchdog_thread([&monitor = watchdog, &master_token]()
+    {
+        while (!master_token.stop_requested())
+        {
+            monitor.check();
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     });
 
     // Ui thread used to show the status of the kiosk
-    std::thread ui_thread([&]()
+    std::jthread ui_thread([&console_view, &state, &master_token]()
     {
-        while (state.running)
+        while (!master_token.stop_requested())
         {
             console_view.render(state);
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
@@ -59,7 +69,7 @@ int main()
     // This runs in the main thread
     try
     {
-        while (state.running)
+        while (!master_token.stop_requested())
         {
             kiosk.step();
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -68,22 +78,6 @@ int main()
     catch (const std::exception& e)
     {
         std::cerr << "FATAL ERROR in Kiosk: " << e.what() << std::endl;
-    }
-
-    // Cleanup (If you ever break the loop)
-    if (watchdog_thread.joinable())
-    {
-        watchdog_thread.join();
-    }
-
-    if (ui_thread.joinable())
-    {
-        ui_thread.join();
-    }
-
-    if (input_thread.joinable())
-    {
-        input_thread.join();
     }
 
     return 0;

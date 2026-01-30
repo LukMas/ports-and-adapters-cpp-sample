@@ -10,11 +10,8 @@ add_library(kiosk_logic_lib STATIC
         Kiosk.cpp
         ports/IViewPort.h
         ports/IArmPort.h
-        states/IKioskState.h
         states/States.h
         states/States.cpp
-        #        ports/WaitingForCoordsState.cpp
-#        ports/WaitingForCoordsState.h
 )
 
 # Tell anyone who uses this library where the headers are

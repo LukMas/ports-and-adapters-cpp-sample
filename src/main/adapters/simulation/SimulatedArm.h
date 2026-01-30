@@ -20,13 +20,13 @@ class SimulatedArm : public IArmPort
 private:
     Coordinate m_destination {0,0}, m_currentPosition{0,0};
     std::mutex m_mutex;
-    std::shared_mutex m_shared_mutex;
 
 public:
     explicit SimulatedArm()= default;
 
     void setDestination(const Coordinate& destination) override
     {
+        m_mutex.lock();
         m_destination = destination;
     }
 
