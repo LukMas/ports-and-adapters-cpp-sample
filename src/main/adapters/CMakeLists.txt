@@ -2,12 +2,11 @@
 include_directories(.)
 
 add_library(kiosks_ports_adapters_lib STATIC
-        console/ConsoleInput.h
-        console/ConsoleView.h
+        console/ConsoleState.h
+        console/ConsoleController.h
+        console/ConsoleController.cpp
         simulation/SimulatedArm.h
         monitors/WatchDog.h
-        console/ConsoleState.h
-        console/ConsoleInput.cpp
 )
 
 target_link_libraries(kiosks_ports_adapters_lib PUBLIC kiosk_logic_lib utils_lib)

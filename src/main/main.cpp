@@ -1,27 +1,23 @@
 #include <iostream>
 
 #include "Kiosk.h"
-#include "console/ConsoleInput.h"
-#include "console/ConsoleView.h"
+#include "console/ConsoleState.h"
 #include "monitors/WatchDog.h"
 #include "simulation/SimulatedArm.h"
+#include "console/ConsoleController.h"
 
 #include <atomic>
+
 
 int main()
 {
     std::stop_source system_shutdown;
     std::stop_token master_token = system_shutdown.get_token();
 
-
     CommandQueue queue;
     ConsoleState state;
 
-    // I define the handler of the input using the console
-    ConsoleInput inputHandler(queue, state);
-
-    // I define the output using the console
-    ConsoleView console_view;
+    ConsoleController console_controller(queue, state);
 
     // The arm that simulates the movement to grab the object
     SimulatedArm arm;
@@ -30,22 +26,12 @@ int main()
     Watchdog watchdog(queue);
 
     // main logic
-    Kiosk kiosk(queue, console_view, arm, 5, 5);
+    Kiosk kiosk(queue, console_controller, arm, 5, 5);
 
     // allows the watchdog to notify the kiosk
-    kiosk.addStatusListener(&watchdog);
+    kiosk.addStatusListener(&console_controller);
 
     // starting threads
-    //
-    // Input thread (Blocks on read())
-    std::jthread input_thread([&input = inputHandler, &system_shutdown, &master_token]()
-    {
-        while (!master_token.stop_requested())
-        {
-            input.run(system_shutdown);
-        }
-    });
-
     std::jthread watchdog_thread([&monitor = watchdog, &master_token]()
     {
         while (!master_token.stop_requested())
@@ -55,14 +41,9 @@ int main()
         }
     });
 
-    // Ui thread used to show the status of the kiosk
-    std::jthread ui_thread([&console_view, &state, &master_token]()
+    std::jthread ui_thread([&console_controller, &system_shutdown]()
     {
-        while (!master_token.stop_requested())
-        {
-            console_view.render(state);
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        }
+        console_controller.run(system_shutdown);
     });
 
     // 7. Main Logic Loop (The Heartbeat)

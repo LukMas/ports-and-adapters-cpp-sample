@@ -20,7 +20,6 @@ struct ConsoleState {
     std::mutex mtx;            // Protects the string
 
     std::string currentInput;  // The characters typed so far
-    std::atomic<bool> running{true}; // Controls the loops
 };
 
 #endif
