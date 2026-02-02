@@ -18,7 +18,6 @@ struct ConsoleState {
      * Used to regulate the access
      */
     std::mutex mtx;            // Protects the string
-
     std::string currentInput;  // The characters typed so far
 };
 

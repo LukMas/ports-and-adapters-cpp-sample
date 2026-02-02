@@ -17,6 +17,7 @@
 #include "IStatusListener.h"
 #include "ports/IArmPort.h"
 #include "ports/IViewPort.h"
+#include "states/States.h"
 
 class IKioskState;
 
@@ -44,7 +45,7 @@ private:
     CommandQueue& m_queue;
     IViewPort& m_view;
     IArmPort& m_arm;
-    std::unique_ptr<IKioskState> m_state;
+    IKioskState* m_currentState;
 
     int m_rows;
     int m_cols;

@@ -10,6 +10,8 @@ add_library(kiosk_logic_lib STATIC
         Kiosk.cpp
         ports/IViewPort.h
         ports/IArmPort.h
+        states/CoreLogicState.h
+        states/CoreLogicState.cpp
         states/States.h
         states/States.cpp
 )

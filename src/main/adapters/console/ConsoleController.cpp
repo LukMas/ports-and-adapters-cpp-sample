@@ -48,12 +48,16 @@ void ConsoleController::run(const std::stop_source& stop_source)
             }
             else if (ch == 127 || ch == 8)
             {
-                if (!m_state.currentInput.empty()) m_state.currentInput.pop_back();
+                if (!m_state.currentInput.empty())
+                {
+                    m_state.currentInput.pop_back();
+                }
             }
             else if (ch >= 32 && ch <= 126)
             {
                 m_state.currentInput += ch;
             }
+
             inputChanged = true;
         }
 

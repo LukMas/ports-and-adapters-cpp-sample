@@ -5,21 +5,11 @@
 
 #include "states/States.h"
 
-// void Kiosk::initializeGrid(int rows, int cols) {
-//     grid.resize(rows, std::vector<Slot>(cols, {"Empty", 0}));
-// }
-
-/**
- * Starting state is IDLE
- * @param q
- * @param v
- * @param a
- */
 Kiosk::Kiosk(CommandQueue& q, IViewPort& v, IArmPort& a, int rows, int cols) :
     m_queue(q),
     m_view(v),
     m_arm(a),
-    m_state(std::make_unique<IdleState>()),
+    m_currentState(&IdleState::getInstance()),
     m_rows(rows),
     m_cols(cols)
 {
@@ -32,12 +22,20 @@ void Kiosk::step()
     // I don't pass an empty commands
     if (cmd.has_value())
     {
-        auto next = m_state->update(*this, cmd.value());
-        if (next)
+        IKioskState& nextState = m_currentState->update(*this, cmd.value());
+        if (&nextState != m_currentState)
         {
-            auto oldState =
-                std::exchange(m_state, std::move(next));
-            std::cout << "Transitioned from " << oldState->getName() << std::endl;
+            // there's a transaction...
+            std::cout << "Transitioned from " << m_currentState->getName() <<
+                " to "<< nextState.getName() << std::endl;
+
+            // state changes...
+            m_currentState = &nextState;
+
+            // Information broadcasting
+            m_view.notifyMessage(m_currentState->getMessage());
+            // send the new status to all the listeners,
+            this->notifyListeners(m_currentState -> getStatus());
         }
     }
 }

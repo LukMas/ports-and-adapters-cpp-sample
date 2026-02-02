@@ -3,14 +3,12 @@
 //
 
 #include "States.h"
+
+#include "CoreLogicState.h"
 #include "../Kiosk.h"
 
-// class MovingState : public IKioskState
-// {
-//     std::unique_ptr<IKioskState> update(Kiosk& context, std::optional<std::string> cmd) override;
-// };
 
-std::unique_ptr<IKioskState> IdleState::update(Kiosk& context, const std::string& cmd)
+IKioskState& IdleState::update(Kiosk& context, const std::string& cmd)
 {
     // if the command is START...
     if (cmd == "START")
@@ -20,26 +18,30 @@ std::unique_ptr<IKioskState> IdleState::update(Kiosk& context, const std::string
         // ... and send the new status to all the listeners
         context.notifyListeners(MachineStatus::WAITING);
 
-        return std::make_unique<WaitingState>();
+        return WaitingState::getInstance();
     }
 
-    return nullptr;
+    return *this;
 }
 
-std::unique_ptr<IKioskState> WaitingState::update(Kiosk& context, const std::string& cmd)
+IKioskState& WaitingState::update(Kiosk& context, const std::string& cmd)
 {
+    auto nextState = CoreLogicState::update(context, cmd);
+
+    if (nextState != nullptr)
+    {
+        return *nextState;
+    }
+
+    // if the core handler doesn't know the command...
+    // ... it should be one that the waiting state can manage
     std::optional<Coordinate> coordinate = context.generateCoordinates(cmd);
 
     if (coordinate.has_value())
     {
-        // ... inform the view with a message,
-        context.getView().notifyMessage("System Moving. The arm is going to the selected position.");
-        // send the new status to all the listeners,
-        context.notifyListeners(MachineStatus::PROCESSING);
         // and start the movement of the arm
         context.getArm().setDestination(coordinate.value());
-
     }
 
-    return nullptr;
+    return *this;
 }
