@@ -50,12 +50,10 @@ applying C++20 standards to a real-world architectural challenge.
 
 The AI was utilized for:
 
-- **Architectural Brainstorming:** Guided the design of the Hexagonal (Ports & Adapters) structure and resolved 
-  complex circular dependencies.
 - **Concurrency Design:** Applied modern C++20 threading patterns, specifically the integration of `std::jthread` 
   with `std::condition_variable_any` for efficient, event-driven simulation.
-- **Unit Test Generation:** Designed and implemented Google Mock objects and test fixtures to ensure 100% logic 
-  coverage.
+- **Unit Test Generation:** Designed and implemented Google Mock objects and test fixtures to ensure coverage of the 
+  logic sections.
 - **Documentation:** Authored technical guides and this README to communicate the system's design clearly.
 
 This collaboration allowed for rapid prototyping and the immediate application of modern C++ best practices, 
