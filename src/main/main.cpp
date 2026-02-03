@@ -48,6 +48,7 @@ int main()
 
     // 7. Main Logic Loop (The Heartbeat)
     // This runs in the main thread
+    kiosk.start();
     try
     {
         while (!master_token.stop_requested())

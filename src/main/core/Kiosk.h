@@ -52,6 +52,20 @@ private:
 
     std::vector<IStatusListener*> m_statusListeners;
 
+
+    /**
+     * The function that notifies the status of the machine
+     * to every registered observer.
+     * @param s the status of the machine
+     */
+    void notifyListeners(MachineStatus s) const
+    {
+        for (auto* l : m_statusListeners)
+        {
+            l->onStatusChanged(s);
+        }
+    }
+
 public:
     /**
      * Constructor, it requires the queue for the commands,
@@ -89,24 +103,26 @@ public:
     }
 
     /**
+     * The function handles the first state transition,
+     * that initialize the Kiosk and prepares it for
+     * listening to the user command.
+     * The function should be called once the Kiosk has
+     * been completely initialized, just before the
+     * creation of the thread that executes the step
+     * function.
+     */
+    void start() const
+    {
+        this->notifyListeners(MachineStatus::BOOTING);
+        this->getView().notifyMessage("System Powering On...");
+    }
+
+    /**
      * The function that is called at every cycle, it
      * runs the state machine obtained the next command
      * from the queue.
      */
     void step();
-
-    /**
-     * The function that notifies the status of the machine
-     * to every registered observer.
-     * @param s the status of the machine
-     */
-    void notifyListeners(MachineStatus s) const
-    {
-        for (auto* l : m_statusListeners)
-        {
-            l->onStatusChanged(s);
-        }
-    }
 
 
     /**
@@ -136,7 +152,7 @@ public:
             return std::nullopt;
         }
 
-        return  Coordinate(x, y);
+        return Coordinate(x, y);
     }
 
     ~Kiosk();

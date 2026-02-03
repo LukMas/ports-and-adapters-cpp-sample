@@ -10,7 +10,7 @@
  * The enum that is used to share the status of the
  * machine.
  */
-enum class MachineStatus { IDLE, PROCESSING, WAITING };
+enum class MachineStatus { BOOTING, IDLE, PROCESSING, WAITING };
 
 inline std::string to_string(MachineStatus machineStatus)
 {
@@ -20,6 +20,8 @@ inline std::string to_string(MachineStatus machineStatus)
 #pragma warning( default : 4061)
     switch (machineStatus)
     {
+    case MachineStatus::BOOTING: result = "BOOTING";
+        break;
     case MachineStatus::IDLE: result = "IDLE";
         break;
     case MachineStatus::WAITING: result = "WAITING";

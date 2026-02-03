@@ -7,24 +7,7 @@
 #include "CoreLogicState.h"
 #include "../Kiosk.h"
 
-
-IKioskState& IdleState::update(Kiosk& context, const std::string& cmd)
-{
-    // if the command is START...
-    if (cmd == "START")
-    {
-        // ... inform the view with a message
-        context.getView().notifyMessage("System Active. Please enter item coordinates.");
-        // ... and send the new status to all the listeners
-        context.notifyListeners(MachineStatus::WAITING);
-
-        return WaitingState::getInstance();
-    }
-
-    return *this;
-}
-
-IKioskState& WaitingState::update(Kiosk& context, const std::string& cmd)
+IKioskState& IKioskState::handleCommand(Kiosk& context, const std::string& cmd)
 {
     auto nextState = CoreLogicState::update(context, cmd);
 
@@ -33,8 +16,33 @@ IKioskState& WaitingState::update(Kiosk& context, const std::string& cmd)
         return *nextState;
     }
 
-    // if the core handler doesn't know the command...
-    // ... it should be one that the waiting state can manage
+    return update(context, cmd);
+}
+
+// It switches the Kiosk to the idle state, waiting for the
+// user input.
+IKioskState& BootState::update(Kiosk& context, const std::string& cmd)
+{
+    return IdleState::getInstance();
+}
+
+// It processes the command START and eventually changes to WAITING,
+// otherwise it does nothing.
+IKioskState& IdleState::update(Kiosk& context, const std::string& cmd)
+{
+    if (cmd == "START")
+    {
+        return WaitingState::getInstance();
+    }
+
+    return *this;
+}
+
+// It checks the coordinates and if they are correct it pass
+// them to the arm, changing the state to PROCESSING, otherwise
+// it remains the same state.
+IKioskState& WaitingState::update(Kiosk& context, const std::string& cmd)
+{
     std::optional<Coordinate> coordinate = context.generateCoordinates(cmd);
 
     if (coordinate.has_value())

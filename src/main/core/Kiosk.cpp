@@ -9,10 +9,11 @@ Kiosk::Kiosk(CommandQueue& q, IViewPort& v, IArmPort& a, int rows, int cols) :
     m_queue(q),
     m_view(v),
     m_arm(a),
-    m_currentState(&IdleState::getInstance()),
+    m_currentState(&BootState::getInstance()),
     m_rows(rows),
     m_cols(cols)
 {
+    m_view.notifyMessage(m_currentState->getMessage());
 }
 
 void Kiosk::step()
@@ -22,12 +23,12 @@ void Kiosk::step()
     // I don't pass an empty commands
     if (cmd.has_value())
     {
-        IKioskState& nextState = m_currentState->update(*this, cmd.value());
+        IKioskState& nextState = m_currentState->handleCommand(*this, cmd.value());
         if (&nextState != m_currentState)
         {
             // there's a transaction...
-            std::cout << "Transitioned from " << m_currentState->getName() <<
-                " to "<< nextState.getName() << std::endl;
+            std::cout << "Transitioned from " << to_string(m_currentState->getStatus()) <<
+                " to "<< to_string(nextState.getStatus()) << std::endl;
 
             // state changes...
             m_currentState = &nextState;
