@@ -19,11 +19,16 @@ IKioskState& IKioskState::handleCommand(Kiosk& context, const std::string& cmd)
     return update(context, cmd);
 }
 
-// It switches the Kiosk to the idle state, waiting for the
-// user input.
+// It processes the command BOOT, moving the state machine to the
+// IDLE.
 IKioskState& BootState::update(Kiosk& context, const std::string& cmd)
 {
-    return IdleState::getInstance();
+    if (cmd == "READY")
+    {
+        return IdleState::getInstance();
+    };
+
+    return *this;
 }
 
 // It processes the command START and eventually changes to WAITING,

@@ -115,6 +115,10 @@ public:
     {
         this->notifyListeners(MachineStatus::BOOTING);
         this->getView().notifyMessage("System Powering On...");
+
+        // once everything is ok I send the READY command to
+        // move to the IDLE state
+        this->m_queue.push("START");
     }
 
     /**
