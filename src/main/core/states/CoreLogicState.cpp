@@ -4,9 +4,9 @@
 
 #include "CoreLogicState.h"
 
-IKioskState* CoreLogicState::update(Kiosk& context, const std::string& cmd)
+IKioskState* CoreLogicState::update(Kiosk& context, KioskCommand& cmd)
 {
-    if (cmd == "IDLE")
+    if (cmd.type == CommandType::IDLE)
     {
         return &IdleState::getInstance();
     }

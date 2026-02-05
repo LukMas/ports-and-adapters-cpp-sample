@@ -1,11 +1,10 @@
 //
 // Created by luca on 21/01/26.
 #include "Kiosk.h"
-#include "CommandQueue.h"
 
 #include "states/States.h"
 
-Kiosk::Kiosk(CommandQueue& q, IViewPort& v, IArmPort& a, int rows, int cols) :
+Kiosk::Kiosk(ICommandQueue& q, IViewPort& v, IArmPort& a, int rows, int cols) :
     m_queue(q),
     m_view(v),
     m_arm(a),
@@ -18,26 +17,22 @@ Kiosk::Kiosk(CommandQueue& q, IViewPort& v, IArmPort& a, int rows, int cols) :
 
 void Kiosk::step()
 {
-    auto cmd = m_queue.try_pop();
+    auto cmd = m_queue.pop();
 
-    // I don't pass an empty commands
-    if (cmd.has_value())
+    IKioskState& nextState = m_currentState->handleCommand(*this, cmd);
+    if (&nextState != m_currentState)
     {
-        IKioskState& nextState = m_currentState->handleCommand(*this, cmd.value());
-        if (&nextState != m_currentState)
-        {
-            // there's a transaction...
-            std::cout << "Transitioned from " << to_string(m_currentState->getStatus()) <<
-                " to "<< to_string(nextState.getStatus()) << std::endl;
+        // there's a transaction...
+        // std::cout << "Transitioned from " << to_string(m_currentState->getStatus()) <<
+        // " to " << to_string(nextState.getStatus()) << std::endl;
 
-            // state changes...
-            m_currentState = &nextState;
+        // state changes...
+        m_currentState = &nextState;
 
-            // Information broadcasting
-            m_view.notifyMessage(m_currentState->getMessage());
-            // send the new status to all the listeners,
-            this->notifyListeners(m_currentState -> getStatus());
-        }
+        // Information broadcasting
+        m_view.notifyMessage(m_currentState->getMessage());
+        // send the new status to all the listeners,
+        this->notifyListeners(m_currentState->getStatus());
     }
 }
 

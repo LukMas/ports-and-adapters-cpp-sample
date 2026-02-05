@@ -17,17 +17,18 @@ public:
     virtual ~IViewPort() = default;
 
     /**
-     * The function used by the Kiosk to notify a message to
-     * the view port.
-     * @param status the string with the name of the state
+     * The function used by the Kiosk to notify a message to the view port. The implementation should copy
+     * the content into its own stack.
+     * @param status the string with the name of the state, it should be copied in the handler
      */
-    virtual void notifyMessage(const std::string& status) = 0;
+    virtual void notifyMessage(std::string status) = 0;
 
     /**
-     * The function used to notify eventual errors of the Kiosk.
+     * The function used to notify eventual errors of the Kiosk. The implementation should copy the content into
+     * its own stack.
      * @param message the error message
      */
-    virtual void notifyError(const std::string& message) = 0;
+    virtual void notifyError(std::string message) = 0;
 };
 
 #endif //GRABSTATION_COMMANDSOURCE_H

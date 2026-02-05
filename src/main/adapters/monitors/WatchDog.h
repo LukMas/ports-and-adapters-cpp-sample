@@ -6,7 +6,6 @@
 #define GRABSTATION_WATCHDOG_H
 #pragma once
 #include "IStatusListener.h"
-#include "CommandQueue.h"
 #include <chrono>
 
 /**
@@ -17,48 +16,52 @@
 class Watchdog : public IStatusListener
 {
 private:
-    CommandQueue& m_queue;
+    ICommandQueue& m_queue;
 
-    std::mutex m_waitingMutex;
+    std::mutex m_mutex{};
 
     bool m_isWaiting = false;
-    std::chrono::steady_clock::time_point m_lastActivity;
+    std::chrono::steady_clock::time_point m_lastActivity{};
+
+    const int TIMEOUT = 30;
 
 public:
-    Watchdog(CommandQueue& q) : m_queue(q), m_lastActivity(std::chrono::steady_clock::now())
+    Watchdog(ICommandQueue& q) : m_queue(q)
     {
     }
 
     void onStatusChanged(const MachineStatus s) override
     {
-        // I need it to avoid incongruences by a call to check just after the IF
-        m_waitingMutex.lock();
-        // as soon as the user started the machine ...
-        if (s == MachineStatus::WAITING)
-        {
-            // ... I start the countdown
-            m_isWaiting = true;
-            m_lastActivity = std::chrono::steady_clock::now();
-        }
-        else
-        {
-            // ... whatever is the status, the monitor should not be active
-            m_isWaiting = false;
-        }
+        // I need to avoid incongruences in the check
+        std::lock_guard<std::mutex> lock(m_mutex); // Locks here
+        // now I update all the values
+        m_isWaiting = (s == MachineStatus::WAITING);
+        m_lastActivity = m_isWaiting
+                             ? std::chrono::steady_clock::now() // store the value
+                             : std::chrono::steady_clock::time_point{}; // reset to something
     }
 
     void check()
     {
-        m_waitingMutex.lock();
-        if (m_isWaiting)
-        {
-            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
-                std::chrono::steady_clock::now() - m_lastActivity);
+        std::lock_guard<std::mutex> lock(m_mutex); // Locks here
 
-            if (elapsed.count() > 30)
-            {
-                m_queue.push("IDLE");
-            }
+        // waiting?
+        if (!m_isWaiting)
+        {
+            // if not, do nothing
+            return;
+        }
+
+        // otherwise find the elapsed time
+        auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
+            std::chrono::steady_clock::now() - m_lastActivity);
+
+        // if the timeout has expired ...
+        if (elapsed.count() > TIMEOUT)
+        {
+            //... reset the flag and push the status to idle
+            m_isWaiting = false;
+            m_queue.push(KioskCommand(CommandType::IDLE));
         }
     }
 };

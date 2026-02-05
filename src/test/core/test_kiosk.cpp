@@ -18,16 +18,22 @@ public:
 
 class MockView : public IViewPort
 {
-public:
-    MOCK_METHOD(void, notifyError, (const std::string& message), (override));
-    MOCK_METHOD(void, notifyMessage, (const std::string& status), (override));
+    MOCK_METHOD(void, notifyMessage, (std::string status), (override));
+    MOCK_METHOD(void, notifyError, (std::string message), (override));
+};
+
+
+class MockQueue : public ICommandQueue
+{
+    MOCK_METHOD(void, push, (KioskCommand cmd), (override));
+    MOCK_METHOD(KioskCommand, pop, (), (override));
 };
 
 // now I write the test base class, that uses the mocks to create a kiosk
 class KioskCoordsTest : public ::testing::Test
 {
 public:
-    CommandQueue queue;
+    MockQueue queue;
     MockArm mock_arm;
     MockView mock_view;
     std::unique_ptr<Kiosk> kiosk;
@@ -41,51 +47,32 @@ protected:
 
 
 // testing
-TEST_F(KioskCoordsTest, ReturnsNullOnIvalidFormat)
-{
-    auto coordinates = kiosk->generateCoordinates("Z99");
-    EXPECT_FALSE(coordinates.has_value());
-
-    coordinates = kiosk->generateCoordinates("99");
-    EXPECT_FALSE(coordinates.has_value());
-
-    coordinates = kiosk->generateCoordinates("9");
-    EXPECT_FALSE(coordinates.has_value());
-
-    coordinates = kiosk->generateCoordinates("0Z");
-    EXPECT_FALSE(coordinates.has_value());
-}
-
 TEST_F(KioskCoordsTest, ReturnsNullOnOutOfGridValues)
 {
-    auto coordinates = kiosk->generateCoordinates("Z9");
+    auto coordinates = kiosk->validateCoordinates(Coordinate(1, 6));
     EXPECT_FALSE(coordinates.has_value());
 
-    coordinates = kiosk->generateCoordinates("F5");
+    coordinates = kiosk->validateCoordinates(Coordinate(5, 6));
     EXPECT_FALSE(coordinates.has_value());
 
-    coordinates = kiosk->generateCoordinates("A6");
+    coordinates = kiosk->validateCoordinates(Coordinate(6, 6));
+    EXPECT_FALSE(coordinates.has_value());
+
+    coordinates = kiosk->validateCoordinates(Coordinate(6, 1));
     EXPECT_FALSE(coordinates.has_value());
 }
 
-TEST_F(KioskCoordsTest, ReturnsnCoordinatesOnClosestCell)
+TEST_F(KioskCoordsTest, ReturnsnValidCoordinates)
 {
-    auto coordinates = kiosk->generateCoordinates("A1");
+    auto coordinates = kiosk->validateCoordinates(Coordinate(1, 1));
     EXPECT_EQ(coordinates->x, 1);
     EXPECT_EQ(coordinates->y, 1);
-}
 
-TEST_F(KioskCoordsTest, ReturnsnCoordinatesOnFurtherCell)
-{
-    auto coordinates = kiosk->generateCoordinates("E5");
+    coordinates = kiosk->validateCoordinates(Coordinate(5, 5));
     EXPECT_EQ(coordinates->x, 5);
     EXPECT_EQ(coordinates->y, 5);
-}
 
-
-TEST_F(KioskCoordsTest, ReturnsnCoordinatesOnAnyMiddleCell)
-{
-    auto coordinates = kiosk->generateCoordinates("C2");
+    coordinates = kiosk->validateCoordinates(Coordinate(3, 2));
     EXPECT_EQ(coordinates->x, 3);
     EXPECT_EQ(coordinates->y, 2);
 }

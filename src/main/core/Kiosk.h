@@ -7,14 +7,12 @@
 
 #pragma once
 #include <iostream>
-#include <memory>
-#include <ostream>
-#include <utility>
+#include <optional>
 
 #include <vector>
 
-#include "CommandQueue.h"
 #include "IStatusListener.h"
+#include "ports/ICommandQueue.h"
 #include "ports/IArmPort.h"
 #include "ports/IViewPort.h"
 #include "states/States.h"
@@ -41,8 +39,7 @@ class IKioskState;
  */
 class Kiosk
 {
-private:
-    CommandQueue& m_queue;
+    ICommandQueue& m_queue;
     IViewPort& m_view;
     IArmPort& m_arm;
     IKioskState* m_currentState;
@@ -77,7 +74,7 @@ public:
      * @param rows number of rows of the kiosk, always bigger than 0
      * @param cols number of cols of the kioks, always bigger than 0
      */
-    Kiosk(CommandQueue& q, IViewPort& v, IArmPort& a, int rows, int cols);
+    Kiosk(ICommandQueue& q, IViewPort& v, IArmPort& a, int rows, int cols);
 
     void addStatusListener(IStatusListener* l)
     {
@@ -118,45 +115,35 @@ public:
 
         // once everything is ok I send the READY command to
         // move to the IDLE state
-        this->m_queue.push("START");
+        this->m_queue.push(KioskCommand(CommandType::READY));
     }
 
     /**
-     * The function that is called at every cycle, it
-     * runs the state machine obtained the next command
-     * from the queue.
+     * The function that is called at every cycle. It takes the command from the command queue and pass it to the
+     * state machine, that processes it and returns the next state.
      */
     void step();
 
 
     /**
-     * The function validates the input string, that could be something like A1 or B9, and returns the coordinates
-     * that identify a cell in the grid. The values allowed for the string are A-Z for the first char and 1-9 for
-     * the second. After checking that they are correct, the resulting numbers should be verified against the size
-     * of the grid.
-     * @param input a string of 2 chars that identifies a cell, with the first one within A-Z and the second one
-     * within 1-9
-     * @return
+     * The function validates the given coordinates against the size of the grid where the kiosk operates. If the
+     * coordinates are valid they will be
+     * @param currentCoordinates a coordinate object to verify agains the grid
+     * @return an optional that contains the coordinates, if valid, or nothing, if not valid
      */
-    [[nodiscard]] std::optional<Coordinate> generateCoordinates(const std::string& input) const
+    [[nodiscard]] std::optional<Coordinate> validateCoordinates(Coordinate currentCoordinates) const
     {
-        // length 2, first A-Z, second 0-9
-        if (input.length() != 2 || !std::isalpha(input[0]) || !std::isdigit(input[1]))
+        // checking against grid size
+        if (currentCoordinates.x > m_cols || currentCoordinates.y > m_rows)
         {
+            std::cout << "Too big coordinates. " << std::endl;
+            std::cout << "Actual size: " << m_cols << " and " << m_rows << ". " << std::endl;
+            std::cout << "Given size: " << currentCoordinates.x << " and " << currentCoordinates.y << "." << std::endl;
+
             return std::nullopt;
         }
 
-        // converting in cell coordinates
-        int x = std::toupper(input[0]) - 'A' + 1;
-        int y = input[1] - '0';
-
-        // cheching against grid size
-        if (x > m_cols || y > m_rows)
-        {
-            return std::nullopt;
-        }
-
-        return Coordinate(x, y);
+        return currentCoordinates;
     }
 
     ~Kiosk();

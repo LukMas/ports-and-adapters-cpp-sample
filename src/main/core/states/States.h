@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "IStatusListener.h"
+#include "commands/KioskCommand.h"
 
 class Kiosk;
 
@@ -30,11 +31,13 @@ public:
      * The first call is to the core logic state, to check if the default
      * routes should be selected. If not, the update, that each state must
      * override, is called.
-     * @param context used to process the command
-     * @param cmd a string that defines the command
+     * @param context used to process the command (as reference being the
+     * handler of the result of the function)
+     * @param cmd the kiosk command (as reference because it's extracted in
+     * the Kiosk and completely processed there)
      * @return the next state, or the current one
      */
-    virtual IKioskState& handleCommand(Kiosk& context, const std::string& cmd);
+    [[nodiscard]] virtual IKioskState& handleCommand(Kiosk& context, KioskCommand& cmd);
 
     /**
      * The function returns a descriptive message related to the state.
@@ -59,10 +62,10 @@ protected:
      * command cannot be handled.
      * The default implementation of the function returns the current state.
      * @param context used to process the command
-     * @param cmd a string that defines the command
+     * @param cmd the command, with the payload if any
      * @return the next state, or the current one
      */
-    virtual IKioskState& update(Kiosk& context, const std::string& cmd)
+    virtual IKioskState& update(Kiosk& context, KioskCommand& cmd)
     {
         return *this;
     };
@@ -78,7 +81,7 @@ class BootState : public IKioskState
 {
     BootState() = default;
 
-    IKioskState& update(Kiosk& context, const std::string& cmd) override;
+    IKioskState& update(Kiosk& context, KioskCommand& cmd) override;
 
 public:
     // This makes it impossible to accidentally create a 'temp' copy
@@ -115,7 +118,7 @@ class IdleState : public IKioskState
     IdleState() = default;
 
 protected:
-    IKioskState& update(Kiosk& context, const std::string& cmd) override;
+    IKioskState& update(Kiosk& context, KioskCommand& cmd) override;
 
 public:
     // This makes it impossible to accidentally create a 'temp' copy
@@ -154,7 +157,7 @@ class WaitingState : public IKioskState
     WaitingState() = default;
 
 protected:
-    IKioskState& update(Kiosk& context, const std::string& cmd) override;
+    IKioskState& update(Kiosk& context, KioskCommand& cmd) override;
 
 public:
     // This makes it impossible to accidentally create a 'temp' copy

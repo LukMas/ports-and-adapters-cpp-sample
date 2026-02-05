@@ -5,8 +5,7 @@
 #include "monitors/WatchDog.h"
 #include "simulation/SimulatedArm.h"
 #include "console/ConsoleController.h"
-
-#include <atomic>
+#include "messaging/SynchronizedCommandQueue.h"
 
 
 int main()
@@ -14,7 +13,7 @@ int main()
     std::stop_source system_shutdown;
     std::stop_token master_token = system_shutdown.get_token();
 
-    CommandQueue queue;
+    SynchronizedCommandQueue queue;
     ConsoleState state;
 
     ConsoleController console_controller(queue, state);
@@ -25,13 +24,22 @@ int main()
     // The monitoring service
     Watchdog watchdog(queue);
 
-    // main logic
+    // I create the controller now, I've all the items for it
     Kiosk kiosk(queue, console_controller, arm, 5, 5);
 
-    // allows the watchdog to notify the kiosk
+
+    // allows the kiosk to notify the watchdog
+    kiosk.addStatusListener(&watchdog);
+    // allows the kiosk to notify the view
     kiosk.addStatusListener(&console_controller);
 
+
     // starting threads
+    std::jthread ui_thread([&console_controller, &system_shutdown]()
+    {
+        console_controller.run(system_shutdown);
+    });
+
     std::jthread watchdog_thread([&monitor = watchdog, &master_token]()
     {
         while (!master_token.stop_requested())
@@ -41,20 +49,16 @@ int main()
         }
     });
 
-    std::jthread ui_thread([&console_controller, &system_shutdown]()
-    {
-        console_controller.run(system_shutdown);
-    });
-
+    // this initializes the Kiosk
+    kiosk.start();
     // 7. Main Logic Loop (The Heartbeat)
     // This runs in the main thread
-    kiosk.start();
     try
     {
         while (!master_token.stop_requested())
         {
             kiosk.step();
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            // std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
     catch (const std::exception& e)

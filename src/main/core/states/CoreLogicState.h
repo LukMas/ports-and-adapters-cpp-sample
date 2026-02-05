@@ -13,7 +13,7 @@ class CoreLogicState
     CoreLogicState() = default;
 
 public:
-    static IKioskState* update(Kiosk& context, const std::string& cmd);
+    static IKioskState* update(Kiosk& context, KioskCommand& cmd);
 
     CoreLogicState(const CoreLogicState&) = delete;
     CoreLogicState& operator=(const CoreLogicState&) = delete;

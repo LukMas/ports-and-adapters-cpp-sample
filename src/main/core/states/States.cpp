@@ -7,7 +7,7 @@
 #include "CoreLogicState.h"
 #include "../Kiosk.h"
 
-IKioskState& IKioskState::handleCommand(Kiosk& context, const std::string& cmd)
+IKioskState& IKioskState::handleCommand(Kiosk& context, KioskCommand& cmd)
 {
     auto nextState = CoreLogicState::update(context, cmd);
 
@@ -21,9 +21,9 @@ IKioskState& IKioskState::handleCommand(Kiosk& context, const std::string& cmd)
 
 // It processes the command BOOT, moving the state machine to the
 // IDLE.
-IKioskState& BootState::update(Kiosk& context, const std::string& cmd)
+IKioskState& BootState::update(Kiosk& context, KioskCommand& cmd)
 {
-    if (cmd == "READY")
+    if (cmd.type == CommandType::READY)
     {
         return IdleState::getInstance();
     };
@@ -33,9 +33,9 @@ IKioskState& BootState::update(Kiosk& context, const std::string& cmd)
 
 // It processes the command START and eventually changes to WAITING,
 // otherwise it does nothing.
-IKioskState& IdleState::update(Kiosk& context, const std::string& cmd)
+IKioskState& IdleState::update(Kiosk& context, KioskCommand& cmd)
 {
-    if (cmd == "START")
+    if (cmd.type == CommandType::START)
     {
         return WaitingState::getInstance();
     }
@@ -46,14 +46,17 @@ IKioskState& IdleState::update(Kiosk& context, const std::string& cmd)
 // It checks the coordinates and if they are correct it pass
 // them to the arm, changing the state to PROCESSING, otherwise
 // it remains the same state.
-IKioskState& WaitingState::update(Kiosk& context, const std::string& cmd)
+IKioskState& WaitingState::update(Kiosk& context, KioskCommand& cmd)
 {
-    std::optional<Coordinate> coordinate = context.generateCoordinates(cmd);
-
-    if (coordinate.has_value())
+    if (cmd.type == CommandType::MOVE_TO)
     {
-        // and start the movement of the arm
-        context.getArm().setDestination(coordinate.value());
+        std::optional<Coordinate> coordinate = context.validateCoordinates(cmd.payload);
+
+        if (coordinate.has_value())
+        {
+            // and start the movement of the arm
+            context.getArm().setDestination(coordinate.value());
+        }
     }
 
     return *this;

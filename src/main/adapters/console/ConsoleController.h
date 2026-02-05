@@ -12,33 +12,33 @@
 #include "ports/IViewPort.h"
 #include "IStatusListener.h"
 #include "ConsoleState.h" // Assuming this holds your currentInput and mtx
-#include "CommandQueue.h"
+#include "ports/ICommandQueue.h"
 
 class ConsoleController : public IViewPort, public IStatusListener
 {
 private:
-    CommandQueue& m_queue;
+    ICommandQueue& m_queue;
     ConsoleState& m_state;
 
     // View Data (Protected by internal mutex)
-    std::mutex m_viewMtx;
+    std::mutex m_viewMtx{};
     std::string m_kioskStatus = "INITIALIZING";
     int m_armX = 0;
     int m_armY = 0;
 
-    void setupTerminal(termios& oldt);
-    void restoreTerminal(const termios& oldt);
+    static void setupTerminal(termios& oldt);
+    static void restoreTerminal(const termios& oldt);
 
 public:
-    ConsoleController(CommandQueue& q, ConsoleState& s) : m_queue(q), m_state(s)
+    ConsoleController(ICommandQueue& q, ConsoleState& s) : m_queue(q), m_state(s)
     {
     }
 
     // Ports/Listener implementations
-    void notifyMessage(const std::string& status) override
+    void notifyMessage(std::string status) override
     {
         std::lock_guard<std::mutex> l(m_viewMtx);
-        m_kioskStatus = status;
+        m_kioskStatus = std::move(status);
     }
 
     void onStatusChanged(MachineStatus s) override
@@ -46,7 +46,7 @@ public:
         /* update local status if needed */
     }
 
-    void notifyError(const std::string& msg) override
+    void notifyError(std::string msg) override
     {
         /* handle error */
     }

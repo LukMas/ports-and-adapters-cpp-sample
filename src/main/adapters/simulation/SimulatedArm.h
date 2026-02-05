@@ -18,15 +18,16 @@
 class SimulatedArm : public IArmPort
 {
 private:
-    Coordinate m_destination {0,0}, m_currentPosition{0,0};
+    Coordinate m_destination{0, 0}, m_currentPosition{0, 0};
     std::mutex m_mutex;
 
 public:
-    explicit SimulatedArm()= default;
+    explicit SimulatedArm() = default;
 
     void setDestination(const Coordinate& destination) override
     {
-        m_mutex.lock();
+        std::lock_guard<std::mutex> lock(m_mutex); // Locks here;
+        // perform a fast copy of the values, then returns
         m_destination = destination;
     }
 
@@ -34,6 +35,7 @@ public:
     {
         return m_currentPosition;
     }
+
     [[nodiscard]] bool hasReachedTarget() const override
     {
         return false;

@@ -6,6 +6,7 @@ include_directories(.)
 find_package(Threads REQUIRED)
 
 add_library(kiosk_logic_lib STATIC
+        commands/KioskCommand.h
         Kiosk.h
         Kiosk.cpp
         ports/IViewPort.h
@@ -14,6 +15,7 @@ add_library(kiosk_logic_lib STATIC
         states/CoreLogicState.cpp
         states/States.h
         states/States.cpp
+        ports/ICommandQueue.h
 )
 
 # Tell anyone who uses this library where the headers are

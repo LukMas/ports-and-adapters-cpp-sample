@@ -2,6 +2,8 @@
 #include <iostream>
 #include <stop_token>
 
+#include "Parser.h"
+
 void ConsoleController::setupTerminal(termios& oldt)
 {
     tcgetattr(STDIN_FILENO, &oldt);
@@ -21,7 +23,7 @@ void ConsoleController::restoreTerminal(const termios& oldt)
 
 void ConsoleController::run(const std::stop_source& stop_source)
 {
-    termios oldt;
+    termios oldt{};
     setupTerminal(oldt);
 
     while (!stop_source.stop_requested())
@@ -40,9 +42,15 @@ void ConsoleController::run(const std::stop_source& stop_source)
                     stop_source.request_stop();
                     break;
                 }
-                else if (!m_state.currentInput.empty())
+
+                if (!m_state.currentInput.empty())
                 {
-                    m_queue.push(m_state.currentInput);
+                    std::optional<KioskCommand> command = Console::Parser::parse(m_state.currentInput);
+                    if (command.has_value())
+                    {
+                        m_queue.push(command.value());
+                    }
+
                     m_state.currentInput.clear();
                 }
             }
@@ -62,15 +70,16 @@ void ConsoleController::run(const std::stop_source& stop_source)
         }
 
         // 2. RENDER (Refresh UI)
-        // Move cursor to top left
-        std::cout << "\033[H";
+        // Move cursor to top left, and 1 row down -> this will allow some logging to show, even if the solution should
+        // absolutely be changed with a centralized logging
+        std::cout << "\033[3H";
 
         {
             std::lock_guard<std::mutex> l(m_viewMtx);
-            std::cout << "--- GRABSTATION MONITOR ---" << "\n";
-            std::cout << "Kiosk State: " << m_kioskStatus << "          " << "\n"; // Spaces clear old text
-            std::cout << "Arm Position: (" << m_armX << ", " << m_armY << ")    " << "\n";
-            std::cout << "---------------------------" << "\n";
+            std::cout << "--- GRABSTATION MONITOR ---                                                     " << "\n";
+            std::cout << "Kiosk State: " << m_kioskStatus << "                                            " << "\n";
+            std::cout << "Arm Position: (" << m_armX << ", " << m_armY << ")                              " << "\n";
+            std::cout << "---------------------------                                                     " << "\n";
         }
 
         {
