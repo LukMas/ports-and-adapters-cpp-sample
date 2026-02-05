@@ -13,8 +13,9 @@ int main()
     std::stop_source system_shutdown;
     std::stop_token master_token = system_shutdown.get_token();
 
-    SynchronizedCommandQueue queue;
     ConsoleState state;
+
+    SynchronizedCommandQueue queue(master_token);
 
     ConsoleController console_controller(queue, state);
 
