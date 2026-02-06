@@ -21,7 +21,7 @@ IKioskState& IKioskState::handleCommand(Kiosk& context, const KioskCommand& cmd)
 
 // It processes the command BOOT, moving the state machine to the
 // IDLE.
-IKioskState& BootState::update(Kiosk& context, const KioskCommand& cmd)
+IKioskState& InitializingState::update(Kiosk& context, const KioskCommand& cmd)
 {
     if (cmd.type == CommandType::READY)
     {
@@ -37,7 +37,7 @@ IKioskState& IdleState::update(Kiosk& context, const KioskCommand& cmd)
 {
     if (cmd.type == CommandType::START)
     {
-        return WaitingState::getInstance();
+        return ProcessingSelectionState::getInstance();
     }
 
     return *this;
@@ -46,7 +46,7 @@ IKioskState& IdleState::update(Kiosk& context, const KioskCommand& cmd)
 // It checks the coordinates and if they are correct it pass
 // them to the arm, changing the state to PROCESSING, otherwise
 // it remains the same state.
-IKioskState& WaitingState::update(Kiosk& context, const KioskCommand& cmd)
+IKioskState& ProcessingSelectionState::update(Kiosk& context, const KioskCommand& cmd)
 {
     if (cmd.type == CommandType::MOVE_TO)
     {

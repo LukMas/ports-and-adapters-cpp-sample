@@ -8,7 +8,7 @@ Kiosk::Kiosk(ICommandQueue& q, IViewPort& v, IArmPort& a, int rows, int cols) :
     m_queue(q),
     m_view(v),
     m_arm(a),
-    m_currentState(&BootState::getInstance()),
+    m_currentState(&InitializingState::getInstance()),
     m_rows(rows),
     m_cols(cols)
 {

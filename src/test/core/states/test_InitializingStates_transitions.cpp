@@ -30,7 +30,7 @@ class MockQueue : public ICommandQueue
 };
 
 
-class IdleStatesTest : public ::testing::Test
+class InitializingStatesTest : public ::testing::Test
 {
 public:
     MockQueue queue;
@@ -47,21 +47,11 @@ protected:
 
 
 // testing
-TEST_F(IdleStatesTest, BootToIdle)
+TEST_F(InitializingStatesTest, InitializeToIdle)
 {
-    IKioskState& currentState = IdleState::getInstance();
+    IKioskState& currentState = InitializingState::getInstance();
     {
-        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::START));
-        EXPECT_TRUE(typeid(nextState) == typeid(WaitingState));
-    }
-}
-
-TEST_F(IdleStatesTest, BootToBoot)
-{
-    IKioskState& currentState = IdleState::getInstance();
-
-    {
-        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::MOVE_TO));
+        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::READY));
         EXPECT_TRUE(typeid(nextState) == typeid(IdleState));
     }
 
@@ -69,20 +59,30 @@ TEST_F(IdleStatesTest, BootToBoot)
         IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::IDLE));
         EXPECT_TRUE(typeid(nextState) == typeid(IdleState));
     }
+}
+
+TEST_F(InitializingStatesTest, InitializeToInitialize)
+{
+    IKioskState& currentState = InitializingState::getInstance();
+
+    {
+        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::MOVE_TO));
+        EXPECT_TRUE(typeid(nextState) == typeid(InitializingState));
+    }
 
 
     {
         IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::RESET));
-        EXPECT_TRUE(typeid(nextState) == typeid(IdleState));
+        EXPECT_TRUE(typeid(nextState) == typeid(InitializingState));
     }
 
     {
-        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::READY));
-        EXPECT_TRUE(typeid(nextState) == typeid(IdleState));
+        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::START));
+        EXPECT_TRUE(typeid(nextState) == typeid(InitializingState));
     }
 
     {
         IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::STOP));
-        EXPECT_TRUE(typeid(nextState) == typeid(IdleState));
+        EXPECT_TRUE(typeid(nextState) == typeid(InitializingState));
     }
 }

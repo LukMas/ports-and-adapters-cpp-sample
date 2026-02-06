@@ -110,7 +110,7 @@ public:
      */
     void start() const
     {
-        this->notifyListeners(MachineStatus::BOOTING);
+        this->notifyListeners(MachineStatus::INITIALIZING);
         this->getView().notifyMessage("System Powering On...");
 
         // once everything is ok I send the READY command to

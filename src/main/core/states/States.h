@@ -74,43 +74,42 @@ protected:
 /**
  * It defines the first state, the one assigned to the Kiosk at the start.
  * It manages the transitions:
- * BOOT -> IDLE
+ * INITIALIZING -> IDLE
  * Global commands IDLE, STOP are handled by CoreLogic.
  */
-class BootState : public IKioskState
+class InitializingState : public IKioskState
 {
-    BootState() = default;
+    InitializingState() = default;
 
     IKioskState& update(Kiosk& context, const KioskCommand& cmd) override;
 
 public:
     // This makes it impossible to accidentally create a 'temp' copy
-    BootState(const BootState&) = delete;
-    BootState& operator=(const BootState&) = delete;
+    InitializingState(const InitializingState&) = delete;
+    InitializingState& operator=(const InitializingState&) = delete;
 
 
     [[nodiscard]] std::string getMessage() override
     {
-        return "System booting...";
+        return "System initializing...";
     }
 
     [[nodiscard]] MachineStatus getStatus() const override
     {
-        return MachineStatus::BOOTING;
+        return MachineStatus::INITIALIZING;
     }
 
-    static BootState& getInstance()
+    static InitializingState& getInstance()
     {
-        static BootState state;
+        static InitializingState state;
         return state;
     }
 };
 
 /**
- * It defines the idle state, the one the Kiosk has when it does
- * nothing and waits for the user input.
+ * It defines the state the Kiosk has when is waiting for the user input.
  * It manages the transitions:
- * IDLE -> WAITING
+ * IDLE -> PROCESSING
  * Global commands IDLE, STOP are handled by CoreLogic.
  */
 class IdleState : public IKioskState
@@ -145,24 +144,23 @@ public:
 
 
 /**
- * It defines the waiting state, that's the state the Kiosk has when
- * the user has started the interaction and waits for the coordinates
+ * It defines the state the Kiosk has when the user has started the interaction and waits for the coordinates
  * of the item.
  * It manages the transitions:
- * WAITING -> PROCESSING
+ * PROCESSING -> APPROACHING_ITEM
  * Global commands IDLE, STOP are handled by CoreLogic.
  */
-class WaitingState : public IKioskState
+class ProcessingSelectionState : public IKioskState
 {
-    WaitingState() = default;
+    ProcessingSelectionState() = default;
 
 protected:
     IKioskState& update(Kiosk& context, const KioskCommand& cmd) override;
 
 public:
     // This makes it impossible to accidentally create a 'temp' copy
-    WaitingState(const WaitingState&) = delete;
-    WaitingState& operator=(const WaitingState&) = delete;
+    ProcessingSelectionState(const ProcessingSelectionState&) = delete;
+    ProcessingSelectionState& operator=(const ProcessingSelectionState&) = delete;
 
     [[nodiscard]] std::string getMessage() override
     {
@@ -171,12 +169,49 @@ public:
 
     [[nodiscard]] MachineStatus getStatus() const override
     {
-        return MachineStatus::WAITING;
+        return MachineStatus::PROCESSING;
     }
 
-    static WaitingState& getInstance()
+    static ProcessingSelectionState& getInstance()
     {
-        static WaitingState state;
+        static ProcessingSelectionState state;
+        return state;
+    }
+};
+
+
+/**
+ * It defines the moving to pick state, that's the state the Kiosk has when
+ * the arm moves to the coordinates the user has set.
+ * It manages the transitions:
+ * APPROACHING_ITEM -> SECURING_ITEM
+ * Global commands IDLE, STOP are handled by CoreLogic.
+ */
+class ApproachingItemState : public IKioskState
+{
+    ApproachingItemState() = default;
+
+protected:
+    IKioskState& update(Kiosk& context, const KioskCommand& cmd) override;
+
+public:
+    // This makes it impossible to accidentally create a 'temp' copy
+    ApproachingItemState(const ProcessingSelectionState&) = delete;
+    ApproachingItemState& operator=(const ProcessingSelectionState&) = delete;
+
+    [[nodiscard]] std::string getMessage() override
+    {
+        return "Arm moving to given coordinates.";
+    }
+
+    [[nodiscard]] MachineStatus getStatus() const override
+    {
+        return MachineStatus::APPROACHING_ITEM;
+    }
+
+    static ApproachingItemState& getInstance()
+    {
+        static ApproachingItemState state;
         return state;
     }
 };

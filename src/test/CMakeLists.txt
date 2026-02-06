@@ -4,8 +4,8 @@
 add_executable(core_unit_tests
         test_main.cpp
         core/test_kiosk.cpp
-        core/states/test_bootstate_transitions.cpp
-        core/states/test_idlestate_transitions.cpp
+        core/states/test_InitializingStates_transitions.cpp
+        core/states/test_IdleStates_transitions.cpp
 )
 
 # 2. Link against your logic and GTest

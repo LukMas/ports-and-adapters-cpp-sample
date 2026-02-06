@@ -20,7 +20,7 @@ private:
 
     std::mutex m_mutex{};
 
-    bool m_isWaiting = false;
+    bool m_isProcessing = false;
     std::chrono::steady_clock::time_point m_lastActivity{};
 
     const int TIMEOUT = 30;
@@ -35,8 +35,8 @@ public:
         // I need to avoid incongruences in the check
         std::lock_guard<std::mutex> lock(m_mutex); // Locks here
         // now I update all the values
-        m_isWaiting = (s == MachineStatus::WAITING);
-        m_lastActivity = m_isWaiting
+        m_isProcessing = (s == MachineStatus::PROCESSING);
+        m_lastActivity = m_isProcessing
                              ? std::chrono::steady_clock::now() // store the value
                              : std::chrono::steady_clock::time_point{}; // reset to something
     }
@@ -46,7 +46,7 @@ public:
         std::lock_guard<std::mutex> lock(m_mutex); // Locks here
 
         // waiting?
-        if (!m_isWaiting)
+        if (!m_isProcessing)
         {
             // if not, do nothing
             return;
@@ -60,7 +60,7 @@ public:
         if (elapsed.count() > TIMEOUT)
         {
             //... reset the flag and push the status to idle
-            m_isWaiting = false;
+            m_isProcessing = false;
             m_queue.push(KioskCommand(CommandType::IDLE));
         }
     }
