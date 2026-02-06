@@ -59,9 +59,9 @@ int main()
         while (!master_token.stop_requested())
         {
             kiosk.step();
-            // std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
     }
+
     catch (const std::exception& e)
     {
         std::cerr << "FATAL ERROR in Kiosk: " << e.what() << std::endl;

@@ -22,7 +22,7 @@ std::optional<KioskCommand> Console::Parser::parse(const std::string& input)
     for (auto& c : action)
     {
         // to avoid the noise that the IDE makes about the use of toupper!
-        c = static_cast<char>(std::toupper((static_cast<unsigned char>(c))));
+        c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
     }
 
     if (action == "START")
