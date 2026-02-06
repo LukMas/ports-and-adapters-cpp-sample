@@ -13,7 +13,7 @@ class CoreLogicState
     CoreLogicState() = default;
 
 public:
-    static IKioskState* update(Kiosk& context, KioskCommand& cmd);
+    static IKioskState* update(Kiosk& context, const KioskCommand& cmd);
 
     CoreLogicState(const CoreLogicState&) = delete;
     CoreLogicState& operator=(const CoreLogicState&) = delete;
