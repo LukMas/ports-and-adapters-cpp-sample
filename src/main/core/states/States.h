@@ -37,7 +37,7 @@ public:
      * the Kiosk and completely processed there)
      * @return the next state, or the current one
      */
-    [[nodiscard]] virtual IKioskState& handleCommand(Kiosk& context, KioskCommand& cmd);
+    [[nodiscard]] virtual IKioskState& handleCommand(Kiosk& context, const KioskCommand& cmd);
 
     /**
      * The function returns a descriptive message related to the state.
@@ -65,7 +65,7 @@ protected:
      * @param cmd the command, with the payload if any
      * @return the next state, or the current one
      */
-    virtual IKioskState& update(Kiosk& context, KioskCommand& cmd)
+    virtual IKioskState& update(Kiosk& context, const KioskCommand& cmd)
     {
         return *this;
     };
@@ -81,7 +81,7 @@ class BootState : public IKioskState
 {
     BootState() = default;
 
-    IKioskState& update(Kiosk& context, KioskCommand& cmd) override;
+    IKioskState& update(Kiosk& context, const KioskCommand& cmd) override;
 
 public:
     // This makes it impossible to accidentally create a 'temp' copy
@@ -118,7 +118,7 @@ class IdleState : public IKioskState
     IdleState() = default;
 
 protected:
-    IKioskState& update(Kiosk& context, KioskCommand& cmd) override;
+    IKioskState& update(Kiosk& context, const KioskCommand& cmd) override;
 
 public:
     // This makes it impossible to accidentally create a 'temp' copy
@@ -157,7 +157,7 @@ class WaitingState : public IKioskState
     WaitingState() = default;
 
 protected:
-    IKioskState& update(Kiosk& context, KioskCommand& cmd) override;
+    IKioskState& update(Kiosk& context, const KioskCommand& cmd) override;
 
 public:
     // This makes it impossible to accidentally create a 'temp' copy

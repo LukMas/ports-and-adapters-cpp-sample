@@ -4,7 +4,7 @@
 
 #include "CoreLogicState.h"
 
-IKioskState* CoreLogicState::update(Kiosk& context, KioskCommand& cmd)
+IKioskState* CoreLogicState::update(Kiosk& context, const KioskCommand& cmd)
 {
     if (cmd.type == CommandType::IDLE)
     {

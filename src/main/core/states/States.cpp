@@ -7,7 +7,7 @@
 #include "CoreLogicState.h"
 #include "../Kiosk.h"
 
-IKioskState& IKioskState::handleCommand(Kiosk& context, KioskCommand& cmd)
+IKioskState& IKioskState::handleCommand(Kiosk& context, const KioskCommand& cmd)
 {
     auto nextState = CoreLogicState::update(context, cmd);
 
@@ -21,7 +21,7 @@ IKioskState& IKioskState::handleCommand(Kiosk& context, KioskCommand& cmd)
 
 // It processes the command BOOT, moving the state machine to the
 // IDLE.
-IKioskState& BootState::update(Kiosk& context, KioskCommand& cmd)
+IKioskState& BootState::update(Kiosk& context, const KioskCommand& cmd)
 {
     if (cmd.type == CommandType::READY)
     {
@@ -33,7 +33,7 @@ IKioskState& BootState::update(Kiosk& context, KioskCommand& cmd)
 
 // It processes the command START and eventually changes to WAITING,
 // otherwise it does nothing.
-IKioskState& IdleState::update(Kiosk& context, KioskCommand& cmd)
+IKioskState& IdleState::update(Kiosk& context, const KioskCommand& cmd)
 {
     if (cmd.type == CommandType::START)
     {
@@ -46,7 +46,7 @@ IKioskState& IdleState::update(Kiosk& context, KioskCommand& cmd)
 // It checks the coordinates and if they are correct it pass
 // them to the arm, changing the state to PROCESSING, otherwise
 // it remains the same state.
-IKioskState& WaitingState::update(Kiosk& context, KioskCommand& cmd)
+IKioskState& WaitingState::update(Kiosk& context, const KioskCommand& cmd)
 {
     if (cmd.type == CommandType::MOVE_TO)
     {
