@@ -56,8 +56,36 @@ IKioskState& ProcessingSelectionState::update(Kiosk& context, const KioskCommand
         {
             // and start the movement of the arm
             context.getArm().setDestination(coordinate.value());
+
+            return ApproachingItemState::getInstance();
         }
     }
 
+    return *this;
+}
+
+// It processes the transition from approaching item to selecting it.
+IKioskState& ApproachingItemState::handleCommand(Kiosk& context, const KioskCommand& cmd)
+{
+    if (cmd.type == CommandType::SECURE_ITEM)
+    {
+        std::optional<Coordinate> coordinate = context.validateCoordinates(cmd.payload);
+
+        if (coordinate.has_value())
+        {
+            // and start the movement of the arm
+            context.getArm().setDestination(coordinate.value());
+
+            // TODO: change to the correct state later
+            return IdleState::getInstance();
+        }
+    }
+
+    return *this;
+}
+
+// It does nothing
+IKioskState& ApproachingItemState::update(Kiosk& context, const KioskCommand& cmd)
+{
     return *this;
 }

@@ -16,8 +16,8 @@ enum class CommandType
     IDLE,
     START,
     MOVE_TO,
-    STOP,
-    RESET,
+    SECURE_ITEM,
+    STOP
 };
 
 struct KioskCommand

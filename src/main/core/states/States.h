@@ -144,8 +144,8 @@ public:
 
 
 /**
- * It defines the state the Kiosk has when the user has started the interaction and waits for the coordinates
- * of the item.
+ * It defines the state the Kiosk has when the user has started the interaction and waits
+ * for the coordinates of the item.
  * It manages the transitions:
  * PROCESSING -> APPROACHING_ITEM
  * Global commands IDLE, STOP are handled by CoreLogic.
@@ -181,11 +181,10 @@ public:
 
 
 /**
- * It defines the moving to pick state, that's the state the Kiosk has when
- * the arm moves to the coordinates the user has set.
+ * It defines the state where the arm moves to the coordinates the user has set.
  * It manages the transitions:
  * APPROACHING_ITEM -> SECURING_ITEM
- * Global commands IDLE, STOP are handled by CoreLogic.
+ * Actually no global transition are set.
  */
 class ApproachingItemState : public IKioskState
 {
@@ -195,9 +194,12 @@ protected:
     IKioskState& update(Kiosk& context, const KioskCommand& cmd) override;
 
 public:
+    // It overrides the default behavirour to avoid the default transitions
+    [[nodiscard]] IKioskState& handleCommand(Kiosk& context, const KioskCommand& cmd) override;
+
     // This makes it impossible to accidentally create a 'temp' copy
-    ApproachingItemState(const ProcessingSelectionState&) = delete;
-    ApproachingItemState& operator=(const ProcessingSelectionState&) = delete;
+    ApproachingItemState(const ApproachingItemState&) = delete;
+    ApproachingItemState& operator=(const ApproachingItemState&) = delete;
 
     [[nodiscard]] std::string getMessage() override
     {

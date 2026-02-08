@@ -70,9 +70,8 @@ TEST_F(IdleStatesTest, BootToBoot)
         EXPECT_TRUE(typeid(nextState) == typeid(IdleState));
     }
 
-
     {
-        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::RESET));
+        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::SECURE_ITEM));
         EXPECT_TRUE(typeid(nextState) == typeid(IdleState));
     }
 

@@ -30,7 +30,7 @@ class MockQueue : public ICommandQueue
 };
 
 
-class InitializingStatesTest : public ::testing::Test
+class ProcessingSelectionStatesTest : public ::testing::Test
 {
 public:
     MockQueue queue;
@@ -47,12 +47,13 @@ protected:
 
 
 // testing
-TEST_F(InitializingStatesTest, InitializeToIdle)
+TEST_F(ProcessingSelectionStatesTest, ProcessingSelectiontoApproachingItem)
 {
-    IKioskState& currentState = InitializingState::getInstance();
+    IKioskState& currentState = ProcessingSelectionState::getInstance();
     {
-        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::READY));
-        EXPECT_TRUE(typeid(nextState) == typeid(IdleState));
+        IKioskState& nextState = currentState.handleCommand(*kiosk,
+            KioskCommand(CommandType::MOVE_TO, Coordinate(1,1)));
+        EXPECT_TRUE(typeid(nextState) == typeid(ApproachingItemState));
     }
 
     {
@@ -61,27 +62,27 @@ TEST_F(InitializingStatesTest, InitializeToIdle)
     }
 }
 
-TEST_F(InitializingStatesTest, InitializeToInitialize)
+TEST_F(ProcessingSelectionStatesTest, InitializeToInitialize)
 {
-    IKioskState& currentState = InitializingState::getInstance();
+    IKioskState& currentState = ProcessingSelectionState::getInstance();
 
     {
-        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::MOVE_TO));
-        EXPECT_TRUE(typeid(nextState) == typeid(InitializingState));
-    }
-
-    {
-        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::SECURE_ITEM));
-        EXPECT_TRUE(typeid(nextState) == typeid(InitializingState));
+        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::READY));
+        EXPECT_TRUE(typeid(nextState) == typeid(ProcessingSelectionState));
     }
 
     {
         IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::START));
-        EXPECT_TRUE(typeid(nextState) == typeid(InitializingState));
+        EXPECT_TRUE(typeid(nextState) == typeid(ProcessingSelectionState));
     }
 
     {
         IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::STOP));
-        EXPECT_TRUE(typeid(nextState) == typeid(InitializingState));
+        EXPECT_TRUE(typeid(nextState) == typeid(ProcessingSelectionState));
+    }
+
+    {
+        IKioskState& nextState = currentState.handleCommand(*kiosk, KioskCommand(CommandType::SECURE_ITEM));
+        EXPECT_TRUE(typeid(nextState) == typeid(ProcessingSelectionState));
     }
 }
