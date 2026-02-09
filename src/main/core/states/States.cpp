@@ -7,22 +7,17 @@
 #include "CoreLogicState.h"
 #include "../Kiosk.h"
 
-IKioskState& IKioskState::handleCommand(Kiosk& context, const KioskCommand& cmd)
-{
-    auto nextState = CoreLogicState::update(context, cmd);
 
+// It processes the command BOOT, moving the state machine to the
+// IDLE.
+IKioskState& InitializingState::handleCommand(Kiosk& context, const KioskCommand& cmd)
+{
+    auto nextState = kiosk::core::states::handleCoreLogic(context, cmd);
     if (nextState != nullptr)
     {
         return *nextState;
     }
 
-    return update(context, cmd);
-}
-
-// It processes the command BOOT, moving the state machine to the
-// IDLE.
-IKioskState& InitializingState::update(Kiosk& context, const KioskCommand& cmd)
-{
     if (cmd.type == CommandType::READY)
     {
         return IdleState::getInstance();
@@ -33,8 +28,15 @@ IKioskState& InitializingState::update(Kiosk& context, const KioskCommand& cmd)
 
 // It processes the command START and eventually changes to WAITING,
 // otherwise it does nothing.
-IKioskState& IdleState::update(Kiosk& context, const KioskCommand& cmd)
+IKioskState& IdleState::handleCommand(Kiosk& context, const KioskCommand& cmd)
 {
+    auto nextState = kiosk::core::states::handleCoreLogic(context, cmd);
+    if (nextState != nullptr)
+    {
+        return *nextState;
+    }
+
+
     if (cmd.type == CommandType::START)
     {
         return ProcessingSelectionState::getInstance();
@@ -46,8 +48,15 @@ IKioskState& IdleState::update(Kiosk& context, const KioskCommand& cmd)
 // It checks the coordinates and if they are correct it pass
 // them to the arm, changing the state to PROCESSING, otherwise
 // it remains the same state.
-IKioskState& ProcessingSelectionState::update(Kiosk& context, const KioskCommand& cmd)
+IKioskState& ProcessingSelectionState::handleCommand(Kiosk& context, const KioskCommand& cmd)
 {
+    auto nextState = kiosk::core::states::handleCoreLogic(context, cmd);
+    if (nextState != nullptr)
+    {
+        return *nextState;
+    }
+
+
     if (cmd.type == CommandType::MOVE_TO)
     {
         std::optional<Coordinate> coordinate = context.validateCoordinates(cmd.payload);
@@ -81,11 +90,5 @@ IKioskState& ApproachingItemState::handleCommand(Kiosk& context, const KioskComm
         }
     }
 
-    return *this;
-}
-
-// It does nothing
-IKioskState& ApproachingItemState::update(Kiosk& context, const KioskCommand& cmd)
-{
     return *this;
 }

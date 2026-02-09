@@ -7,17 +7,10 @@
 
 #include "States.h"
 
-
-class CoreLogicState
+namespace kiosk::core::states
 {
-    CoreLogicState() = default;
-
-public:
-    static IKioskState* update(Kiosk& context, const KioskCommand& cmd);
-
-    CoreLogicState(const CoreLogicState&) = delete;
-    CoreLogicState& operator=(const CoreLogicState&) = delete;
-};
+    IKioskState* handleCoreLogic(Kiosk& context, const KioskCommand& cmd);
+}
 
 
 #endif //GRABSTATION_CORELOGICSTATE_H

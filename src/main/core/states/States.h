@@ -37,7 +37,7 @@ public:
      * the Kiosk and completely processed there)
      * @return the next state, or the current one
      */
-    [[nodiscard]] virtual IKioskState& handleCommand(Kiosk& context, const KioskCommand& cmd);
+    [[nodiscard]] virtual IKioskState& handleCommand(Kiosk& context, const KioskCommand& cmd) = 0;
 
     /**
      * The function returns a descriptive message related to the state.
@@ -54,21 +54,6 @@ public:
     // This makes it impossible to accidentally create a 'temp' copy
     IKioskState(const IKioskState&) = delete;
     IKioskState& operator=(const IKioskState&) = delete;
-
-protected:
-    /**
-     * The function takes the context and the command and returns the next
-     * state, if the current state can handle it, or the same state if the
-     * command cannot be handled.
-     * The default implementation of the function returns the current state.
-     * @param context used to process the command
-     * @param cmd the command, with the payload if any
-     * @return the next state, or the current one
-     */
-    virtual IKioskState& update(Kiosk& context, const KioskCommand& cmd)
-    {
-        return *this;
-    };
 };
 
 /**
@@ -81,9 +66,9 @@ class InitializingState : public IKioskState
 {
     InitializingState() = default;
 
-    IKioskState& update(Kiosk& context, const KioskCommand& cmd) override;
-
 public:
+    [[nodiscard]] IKioskState& handleCommand(Kiosk& context, const KioskCommand& cmd) override;
+
     // This makes it impossible to accidentally create a 'temp' copy
     InitializingState(const InitializingState&) = delete;
     InitializingState& operator=(const InitializingState&) = delete;
@@ -116,10 +101,9 @@ class IdleState : public IKioskState
 {
     IdleState() = default;
 
-protected:
-    IKioskState& update(Kiosk& context, const KioskCommand& cmd) override;
-
 public:
+    [[nodiscard]] IKioskState& handleCommand(Kiosk& context, const KioskCommand& cmd) override;
+
     // This makes it impossible to accidentally create a 'temp' copy
     IdleState(const IdleState&) = delete;
     IdleState& operator=(const IdleState&) = delete;
@@ -154,10 +138,9 @@ class ProcessingSelectionState : public IKioskState
 {
     ProcessingSelectionState() = default;
 
-protected:
-    IKioskState& update(Kiosk& context, const KioskCommand& cmd) override;
-
 public:
+    [[nodiscard]] IKioskState& handleCommand(Kiosk& context, const KioskCommand& cmd) override;
+
     // This makes it impossible to accidentally create a 'temp' copy
     ProcessingSelectionState(const ProcessingSelectionState&) = delete;
     ProcessingSelectionState& operator=(const ProcessingSelectionState&) = delete;
@@ -190,11 +173,7 @@ class ApproachingItemState : public IKioskState
 {
     ApproachingItemState() = default;
 
-protected:
-    IKioskState& update(Kiosk& context, const KioskCommand& cmd) override;
-
 public:
-    // It overrides the default behavirour to avoid the default transitions
     [[nodiscard]] IKioskState& handleCommand(Kiosk& context, const KioskCommand& cmd) override;
 
     // This makes it impossible to accidentally create a 'temp' copy
