@@ -10,6 +10,12 @@
 #include "ports/IArmPort.h"
 #include <thread>
 
+
+// I add it here because it's where I use it as atomic. With a different 'arm' I may use a mutex,
+// or something else. But here I use an atomic, and I want to be sure that Coordinate could be used
+// with atomic.
+static_assert(std::atomic<Coordinate>::is_always_lock_free);
+
 /**
  * The class implements the IArmPort and simulates the presence of a real
  * arm that moves to the selected position.
@@ -18,7 +24,11 @@
 class SimulatedArm : public IArmPort
 {
 private:
-    Coordinate m_destination{0, 0}, m_currentPosition{0, 0};
+    Coordinate m_destination{0, 0};
+
+    // It allows to atomically read the values. Moreover, the reader could read not up-to-date values,
+    // but being used in a console to show a simulated arm it's not important.
+    std::atomic<Coordinate> m_currentPosition{Coordinate{0, 0}};
     std::mutex m_mutex;
 
 public:
@@ -33,7 +43,8 @@ public:
 
     [[nodiscard]] Coordinate getCurrentPosition() const override
     {
-        return m_currentPosition;
+        // I extract from the atomic the value
+        return m_currentPosition.load();
     }
 
     [[nodiscard]] bool hasReachedTarget() const override
@@ -41,28 +52,27 @@ public:
         return false;
     };
 
-    // void moveTo(int tx, int ty) override
-    // {
-    //     // create a thread that simulates the arm movement...
-    //     std::thread([this, tx, ty]()
-    //     {
-    //         while ((m_y != ty) || (m_x != tx))
-    //         {
-    //             std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    //             // first I'll align on the x-axis...
-    //             if (m_y != ty)
-    //             {
-    //                 m_y += (ty > m_y) ? 1 : -1;
-    //             }
-    //             // ... then I'll align on the y-axis
-    //             else
-    //             {
-    //                 m_x += (tx > m_x) ? 1 : -1;
-    //             }
-    //         }
-    //         // ... then detach it when the operation is finish to destroy it
-    //     }).detach();
-    // }
+    void move()
+    {
+        if (m_currentPosition.load().y != m_destination.y)
+        {
+            m_currentPosition.exchange(Coordinate{
+                m_currentPosition.load().x,
+                m_currentPosition.load().y < m_destination.y
+                    ? m_currentPosition.load().y + 1
+                    : m_currentPosition.load().y - 1
+            });
+        }
+        else if (m_currentPosition.load().x != m_destination.x)
+        {
+            m_currentPosition.exchange(Coordinate{
+                m_currentPosition.load().x < m_destination.x
+                    ? m_currentPosition.load().x + 1
+                    : m_currentPosition.load().x - 1,
+                m_currentPosition.load().y
+            });
+        }
+    }
 };
 
 #endif //GRABSTATION_SIMULATEDARM_H

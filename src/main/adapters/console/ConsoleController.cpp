@@ -74,11 +74,13 @@ void ConsoleController::run(const std::stop_source& stop_source)
         // absolutely be changed with a centralized logging
         std::cout << "\033[3H";
 
+        Coordinate armPosition = m_arm.getCurrentPosition();
+
         {
             std::lock_guard<std::mutex> l(m_viewMtx);
             std::cout << "--- GRABSTATION MONITOR ---                                                     " << "\n";
             std::cout << "Kiosk State: " << m_kioskStatus << "                                            " << "\n";
-            std::cout << "Arm Position: (" << m_armX << ", " << m_armY << ")                              " << "\n";
+            std::cout << "Arm Position: (" << armPosition.x << ", " << armPosition.y << ")                " << "\n";
             std::cout << "---------------------------                                                     " << "\n";
         }
 

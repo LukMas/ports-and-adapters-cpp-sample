@@ -19,6 +19,7 @@ class ConsoleController : public IViewPort, public IStatusListener
 private:
     ICommandQueue& m_queue;
     ConsoleState& m_state;
+    IArmPort& m_arm;
 
     // View Data (Protected by internal mutex)
     std::mutex m_viewMtx{};
@@ -30,7 +31,7 @@ private:
     static void restoreTerminal(const termios& oldt);
 
 public:
-    ConsoleController(ICommandQueue& q, ConsoleState& s) : m_queue(q), m_state(s)
+    ConsoleController(ICommandQueue& q, ConsoleState& s, IArmPort& arm) : m_queue(q), m_state(s), m_arm(arm)
     {
     }
 

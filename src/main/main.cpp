@@ -17,10 +17,12 @@ int main()
 
     SynchronizedCommandQueue queue(master_token);
 
-    ConsoleController console_controller(queue, state);
-
     // The arm that simulates the movement to grab the object
     SimulatedArm arm;
+
+    // Now I create the console.
+    ConsoleController console_controller(queue, state, arm);
+
 
     // The monitoring service
     Watchdog watchdog(queue);
@@ -39,6 +41,16 @@ int main()
     std::jthread ui_thread([&console_controller, &system_shutdown]()
     {
         console_controller.run(system_shutdown);
+    });
+
+
+    std::jthread arm_simulator_thread([&simulator = arm, &master_token]()
+    {
+        while (!master_token.stop_requested())
+        {
+            simulator.move();
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
     });
 
     std::jthread watchdog_thread([&monitor = watchdog, &master_token]()

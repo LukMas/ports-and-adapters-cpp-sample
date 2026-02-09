@@ -7,6 +7,7 @@ add_executable(core_unit_tests
         core/states/test_InitializingStates_transitions.cpp
         core/states/test_IdleStates_transitions.cpp
         core/states/test_processingSelectionStates_transitions.cpp
+        adapters/simulation/test_arm_simulation.cpp
 )
 
 # 2. Link against your logic and GTest
