@@ -7,7 +7,6 @@
 
 #include <string>
 #include <mutex>
-#include <atomic>
 
 /**
  * Structure used to carry the current input and

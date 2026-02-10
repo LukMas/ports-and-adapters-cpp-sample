@@ -16,6 +16,7 @@ add_library(kiosk_logic_lib STATIC
         states/States.h
         states/States.cpp
         ports/ICommandQueue.h
+        ports/ILogger.h
 )
 
 # Tell anyone who uses this library where the headers are

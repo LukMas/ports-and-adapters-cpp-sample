@@ -14,6 +14,7 @@
 #include "IStatusListener.h"
 #include "ports/ICommandQueue.h"
 #include "ports/IArmPort.h"
+#include "ports/ILogger.h"
 #include "ports/IViewPort.h"
 #include "states/States.h"
 
@@ -42,6 +43,7 @@ class Kiosk
     ICommandQueue& m_queue;
     IViewPort& m_view;
     IArmPort& m_arm;
+    ILogger& m_log;
     IKioskState* m_currentState;
 
     int m_rows;
@@ -71,10 +73,11 @@ public:
      * @param q the instance of the queue
      * @param v the view port
      * @param a the arm port
+     * @param log the logger
      * @param rows number of rows of the kiosk, always bigger than 0
      * @param cols number of cols of the kioks, always bigger than 0
      */
-    Kiosk(ICommandQueue& q, IViewPort& v, IArmPort& a, int rows, int cols);
+    Kiosk(ICommandQueue& q, IViewPort& v, IArmPort& a, ILogger& log, int rows, int cols);
 
     void addStatusListener(IStatusListener* l)
     {

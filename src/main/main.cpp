@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 
 #include "Kiosk.h"
@@ -5,6 +6,7 @@
 #include "monitors/WatchDog.h"
 #include "simulation/SimulatedArm.h"
 #include "console/ConsoleController.h"
+#include "logger/AsyncLogger.h"
 #include "messaging/SynchronizedCommandQueue.h"
 
 
@@ -12,6 +14,8 @@ int main()
 {
     std::stop_source system_shutdown;
     std::stop_token master_token = system_shutdown.get_token();
+
+    Logger::AsyncLogger async_logger("kiosk.log");
 
     ConsoleState state;
 
@@ -28,7 +32,7 @@ int main()
     Watchdog watchdog(queue);
 
     // I create the controller now, I've all the items for it
-    Kiosk kiosk(queue, console_controller, arm, 5, 5);
+    Kiosk kiosk(queue, console_controller, arm, async_logger, 5, 5);
 
 
     // allows the kiosk to notify the watchdog
@@ -41,6 +45,12 @@ int main()
     std::jthread ui_thread([&console_controller, &system_shutdown]()
     {
         console_controller.run(system_shutdown);
+    });
+
+
+    std::jthread log_thread([&async_logger, &master_token]()
+    {
+        async_logger.flush(master_token);
     });
 
 

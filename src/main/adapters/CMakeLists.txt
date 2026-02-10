@@ -10,6 +10,8 @@ add_library(kiosks_ports_adapters_lib STATIC
         messaging/SynchronizedCommandQueue.h
         console/Parser.cpp
         console/Parser.h
+        logger/AsyncLogger.cpp
+        logger/AsyncLogger.h
 )
 
 target_link_libraries(kiosks_ports_adapters_lib PUBLIC kiosk_logic_lib utils_lib)
