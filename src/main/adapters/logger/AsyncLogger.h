@@ -7,7 +7,6 @@
 
 #include <condition_variable>
 #include <fstream>
-#include <memory>
 #include <queue>
 
 #include "ports/ILogger.h"
@@ -16,24 +15,23 @@ namespace Logger
 {
     class AsyncLogger : public ILogger
     {
-        std::queue<std::string> m_queue;
-
         std::mutex m_mutex;
-
         std::condition_variable_any m_cv;
 
-        std::ofstream m_file; // The file handle
+        std::queue<std::string> m_queue;
+
+        std::ofstream m_file;
 
     public:
-        AsyncLogger(const std::string& filename);
-
-        ~AsyncLogger();
+        explicit AsyncLogger(const std::string& filename);
 
         void log(const std::string& message) override;
 
         void flush(std::stop_token& st);
 
         AsyncLogger& operator=(const AsyncLogger&) = delete;
+
+        ~AsyncLogger() override = default;
     };
 }
 
