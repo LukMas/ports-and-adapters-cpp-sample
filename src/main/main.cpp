@@ -3,7 +3,7 @@
 
 #include "Kiosk.h"
 #include "console/ConsoleState.h"
-#include "monitors/WatchDog.h"
+#include "monitors/UserInactiveWatchdog.h"
 #include "simulation/SimulatedArm.h"
 #include "console/ConsoleController.h"
 #include "logger/AsyncLogger.h"
@@ -29,14 +29,14 @@ int main()
 
 
     // The monitoring service
-    Watchdog watchdog(queue);
+    UserInactiveWatchdog user_inactive_watchdog(queue);
 
     // I create the controller now, I've all the items for it
     Kiosk kiosk(queue, console_controller, arm, async_logger, 5, 5);
 
 
     // allows the kiosk to notify the watchdog
-    kiosk.addStatusListener(&watchdog);
+    kiosk.addStatusListener(&user_inactive_watchdog);
     // allows the kiosk to notify the view
     kiosk.addStatusListener(&console_controller);
 
@@ -63,7 +63,7 @@ int main()
         }
     });
 
-    std::jthread watchdog_thread([&monitor = watchdog, &master_token]()
+    std::jthread user_inactive_watchdog_thread([&monitor = user_inactive_watchdog, &master_token]()
     {
         while (!master_token.stop_requested())
         {

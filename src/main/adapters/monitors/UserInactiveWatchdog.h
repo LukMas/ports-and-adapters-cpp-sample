@@ -13,7 +13,7 @@
  * that changes back the status of the machine to IDLE when the actual status
  * is WAITING and the user hasn't interacted for more than 30 seconds. 
  */
-class Watchdog : public IStatusListener
+class UserInactiveWatchdog : public IStatusListener
 {
 private:
     ICommandQueue& m_queue;
@@ -26,7 +26,7 @@ private:
     const int TIMEOUT = 30;
 
 public:
-    Watchdog(ICommandQueue& q) : m_queue(q)
+    UserInactiveWatchdog(ICommandQueue& q) : m_queue(q)
     {
     }
 

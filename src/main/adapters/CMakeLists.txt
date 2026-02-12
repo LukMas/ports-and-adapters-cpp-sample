@@ -6,7 +6,7 @@ add_library(kiosks_ports_adapters_lib STATIC
         console/ConsoleController.h
         console/ConsoleController.cpp
         simulation/SimulatedArm.h
-        monitors/WatchDog.h
+        monitors/UserInactiveWatchdog.h
         messaging/SynchronizedCommandQueue.h
         console/Parser.cpp
         console/Parser.h
