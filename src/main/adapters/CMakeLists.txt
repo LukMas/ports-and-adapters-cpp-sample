@@ -2,7 +2,6 @@
 include_directories(.)
 
 add_library(kiosks_ports_adapters_lib STATIC
-        console/ConsoleState.h
         console/ConsoleController.h
         console/ConsoleController.cpp
         simulation/SimulatedArm.h

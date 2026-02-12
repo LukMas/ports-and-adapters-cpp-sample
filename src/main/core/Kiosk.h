@@ -46,10 +46,11 @@ class Kiosk
     ILogger& m_log;
     IKioskState* m_currentState;
 
+    std::vector<IStatusListener*> m_statusListeners;
+
     int m_rows;
     int m_cols;
 
-    std::vector<IStatusListener*> m_statusListeners;
 
 
     /**

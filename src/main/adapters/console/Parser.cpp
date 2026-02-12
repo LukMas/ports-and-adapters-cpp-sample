@@ -18,13 +18,16 @@ std::optional<KioskCommand> Console::Parser::parse(const std::string& input)
     // action with the content it has read
     ss >> action;
 
-    // Normalize to uppercase
+    // Normalize to uppercase (**I've copied it, I just know it works**)
     for (auto& c : action)
     {
         // to avoid the noise that the IDE makes about the use of toupper!
         c = static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
     }
 
+    // I process the actions now
+
+    // It's a list of Ifs, but the console just simulates the interaction, it's not a state machine
     if (action == "START")
     {
         return KioskCommand(CommandType::START);
@@ -32,6 +35,7 @@ std::optional<KioskCommand> Console::Parser::parse(const std::string& input)
 
     if (action == "MOVE")
     {
+        // I expect the format MOVE A 2, or MOVE Z 33...
         char col; // 'A', 'B', etc.
         int row; // 1, 2, 3...
 
@@ -47,7 +51,8 @@ std::optional<KioskCommand> Console::Parser::parse(const std::string& input)
                 return KioskCommand(CommandType::MOVE_TO, Coordinate(x, y));
             }
         }
-        return std::nullopt; // Syntax was wrong for MOVE
+        // if not, the syntax was incorrect and I generate no command
+        return std::nullopt;
     }
 
 

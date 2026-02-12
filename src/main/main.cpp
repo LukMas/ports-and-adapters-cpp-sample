@@ -2,7 +2,6 @@
 #include <iostream>
 
 #include "Kiosk.h"
-#include "console/ConsoleState.h"
 #include "monitors/UserInactiveWatchdog.h"
 #include "simulation/SimulatedArm.h"
 #include "console/ConsoleController.h"
@@ -17,15 +16,13 @@ int main()
 
     Logger::AsyncLogger async_logger("kiosk.log");
 
-    ConsoleState state;
-
     SynchronizedCommandQueue queue(master_token);
 
     // The arm that simulates the movement to grab the object
     SimulatedArm arm;
 
     // Now I create the console.
-    ConsoleController console_controller(queue, state, arm);
+    ConsoleController console_controller(queue, arm);
 
 
     // The monitoring service

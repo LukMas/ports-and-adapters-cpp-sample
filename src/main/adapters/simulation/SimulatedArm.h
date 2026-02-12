@@ -23,20 +23,20 @@ static_assert(std::atomic<Coordinate>::is_always_lock_free);
  */
 class SimulatedArm : public IArmPort
 {
-private:
+    std::mutex m_mutex;
+
     Coordinate m_destination{0, 0};
 
     // It allows to atomically read the values. Moreover, the reader could read not up-to-date values,
     // but being used in a console to show a simulated arm it's not important.
     std::atomic<Coordinate> m_currentPosition{Coordinate{0, 0}};
-    std::mutex m_mutex;
 
 public:
     explicit SimulatedArm() = default;
 
     void setDestination(const Coordinate& destination) override
     {
-        std::lock_guard<std::mutex> lock(m_mutex); // Locks here;
+        std::lock_guard<std::mutex> lock(m_mutex);
         // perform a fast copy of the values, then returns
         m_destination = destination;
     }
@@ -52,6 +52,10 @@ public:
         return false;
     };
 
+    /**
+     * The function continuously checks the current position and the destination, moving the arm
+     * over the Y-axis, before, and the X-axis, after, as long as the two are not the same.
+     */
     void move()
     {
         if (m_currentPosition.load().y != m_destination.y)

@@ -18,9 +18,10 @@ class SynchronizedCommandQueue : public ICommandQueue
 {
     std::stop_token& stop_token;
 
-    std::queue<KioskCommand> m_queue;
     std::mutex m_mutex;
     std::condition_variable_any m_cv;
+
+    std::queue<KioskCommand> m_queue;
 
 public:
     /**
@@ -37,29 +38,48 @@ public:
     void push(KioskCommand cmd) override
     {
         {
+            // I activate the lock...
             std::lock_guard<std::mutex> lock(m_mutex);
+            // ... and push into the queue
             m_queue.push(cmd);
         }
 
+        // I notify any sleeping thread that the queue has something
         m_cv.notify_one();
     }
 
     KioskCommand pop() override
     {
-        std::unique_lock<std::mutex> lock(m_mutex);
+        // I just need it for later...
+        KioskCommand cmd = KioskCommand{CommandType::IDLE};
 
-        m_cv.wait(lock, stop_token, [this]
         {
-            return !m_queue.empty();
-        });
+            // I activate the lock...
+            std::unique_lock<std::mutex> lock(m_mutex);
 
-        if (stop_token.stop_requested())
-        {
-            return KioskCommand{CommandType::STOP};
+            // and I put the thread into idle using the condition variable.
+            // Here I wait for notify, and then I check the queue, or for a change in the stop token. When one of the two
+            // happens, I lock the mutex and go to the next instruction
+            m_cv.wait(lock, stop_token, [this]
+            {
+                // if  notify comes and the queue is empty I simply sleep again
+                return !m_queue.empty();
+            });
+
+            // If the stop token has been requested...
+            if (stop_token.stop_requested())
+            {
+                // ... I shut down the system sending one last message
+                return KioskCommand{CommandType::STOP};
+            }
+
+
+            // I take the command and pop the queue...
+            cmd = m_queue.front();
+            m_queue.pop();
         }
 
-        KioskCommand cmd = m_queue.front();
-        m_queue.pop();
+        // Outside the lock, reducing the 'lock' size, I return the command
         return cmd;
     }
 };

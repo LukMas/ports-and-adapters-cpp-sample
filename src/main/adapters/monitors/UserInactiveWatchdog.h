@@ -15,15 +15,16 @@
  */
 class UserInactiveWatchdog : public IStatusListener
 {
-private:
     ICommandQueue& m_queue;
+
+    const int TIMEOUT = 30;
 
     std::mutex m_mutex{};
 
     bool m_isProcessing = false;
     std::chrono::steady_clock::time_point m_lastActivity{};
 
-    const int TIMEOUT = 30;
+
 
 public:
     UserInactiveWatchdog(ICommandQueue& q) : m_queue(q)
@@ -43,16 +44,17 @@ public:
 
     void check()
     {
-        std::lock_guard<std::mutex> lock(m_mutex); // Locks here
+        // I need to lock the whole operation...
+        std::lock_guard<std::mutex> lock(m_mutex);
 
-        // waiting?
+        // I check if it's waiting...
         if (!m_isProcessing)
         {
             // if not, do nothing
             return;
         }
 
-        // otherwise find the elapsed time
+        // ... otherwise I find the elapsed time
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
             std::chrono::steady_clock::now() - m_lastActivity);
 
@@ -63,6 +65,9 @@ public:
             m_isProcessing = false;
             m_queue.push(KioskCommand(CommandType::IDLE));
         }
+
+        // Only here I release the lock, but I can't do otherwise because I need the flags, the timer and the queue
+        // all the time
     }
 };
 #endif //GRABSTATION_WATCHDOG_H
