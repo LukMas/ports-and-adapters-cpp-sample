@@ -5,12 +5,11 @@
 #ifndef GRABSTATION_ARMPORT_H
 #define GRABSTATION_ARMPORT_H
 #pragma once
-#include <atomic>
 
 struct Coordinate
 {
-    int x;
-    int y;
+    float x;
+    float y;
 };
 
 /**

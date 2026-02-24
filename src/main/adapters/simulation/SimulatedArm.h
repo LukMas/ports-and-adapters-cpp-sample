@@ -25,20 +25,40 @@ class SimulatedArm : public IArmPort
 {
     std::mutex m_mutex;
 
-    Coordinate m_destination{0, 0};
+    Coordinate m_end{0.0f, 0.0f};
+    Coordinate m_start{0.0f, 0.0f};
 
     // It allows to atomically read the values. Moreover, the reader could read not up-to-date values,
     // but being used in a console to show a simulated arm it's not important.
-    std::atomic<Coordinate> m_currentPosition{Coordinate{0, 0}};
+    std::atomic<Coordinate> m_currentPosition{Coordinate{0.0f, 0.0f}};
+
+    std::chrono::steady_clock::time_point startTime;
+    float durationSeconds = 0.0f;
+    bool isMoving = false;
 
 public:
+    static inline float MAX_SPEED = 1.0f;
+
     explicit SimulatedArm() = default;
 
     void setDestination(const Coordinate& destination) override
     {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        // perform a fast copy of the values, then returns
-        m_destination = destination;
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            // perform a fast copy of the values, then returns
+            m_end = destination;
+        }
+
+        // I keep a copy of the start position for the calculations
+        m_start = m_currentPosition.load();
+
+        const float distance = std::hypot(m_end.x - m_currentPosition.load().x,
+                                          m_end.y - m_currentPosition.load().y);
+
+        this->durationSeconds = distance / MAX_SPEED;
+
+        this->startTime = std::chrono::steady_clock::now();
+        this->isMoving = true;
     }
 
     [[nodiscard]] Coordinate getCurrentPosition() const override
@@ -49,32 +69,31 @@ public:
 
     [[nodiscard]] bool hasReachedTarget() const override
     {
-        return false;
+        return !isMoving;
     };
 
     /**
-     * The function continuously checks the current position and the destination, moving the arm
-     * over the Y-axis, before, and the X-axis, after, as long as the two are not the same.
+     * The function simulates a linear movement of the arm using a constant velocity.
      */
     void move()
     {
-        if (m_currentPosition.load().y != m_destination.y)
+        if (!isMoving) return;
+
+        const auto now = std::chrono::steady_clock::now();
+        const std::chrono::duration<float> elapsed = now - startTime;
+        const float t = elapsed.count() / durationSeconds;
+
+        if (t >= 1.0f)
         {
-            m_currentPosition.exchange(Coordinate{
-                m_currentPosition.load().x,
-                m_currentPosition.load().y < m_destination.y
-                    ? m_currentPosition.load().y + 1
-                    : m_currentPosition.load().y - 1
-            });
+            m_currentPosition.store(m_end);
+            isMoving = false;
         }
-        else if (m_currentPosition.load().x != m_destination.x)
+        else
         {
-            m_currentPosition.exchange(Coordinate{
-                m_currentPosition.load().x < m_destination.x
-                    ? m_currentPosition.load().x + 1
-                    : m_currentPosition.load().x - 1,
-                m_currentPosition.load().y
-            });
+            const float nextX = m_start.x + (m_end.x - m_start.x) * t;
+            const float nextY = m_start.y + (m_end.y - m_start.y) * t;
+
+            m_currentPosition.store(Coordinate{nextX, nextY});
         }
     }
 };
