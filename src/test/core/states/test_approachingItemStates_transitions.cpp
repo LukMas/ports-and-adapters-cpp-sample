@@ -8,6 +8,12 @@
 #include "gmock/gmock-function-mocker.h"
 
 // mock versions of the classes not relevant for this tests
+class MockLogger : public ILogger
+{
+public:
+    MOCK_METHOD(void, log, (const std::string& message), (override));
+};
+
 class MockArm : public IArmPort
 {
 public:
@@ -26,7 +32,7 @@ class MockView : public IViewPort
 class MockQueue : public ICommandQueue
 {
     MOCK_METHOD(void, push, (KioskCommand cmd), (override));
-    MOCK_METHOD(KioskCommand, pop, (), (override));
+    MOCK_METHOD(std::optional<KioskCommand>, pop, (), (override));
 };
 
 
@@ -34,6 +40,7 @@ class ApproachingItemStatesTest : public ::testing::Test
 {
 public:
     MockQueue queue;
+    MockLogger mock_logger;
     MockArm mock_arm;
     MockView mock_view;
     std::unique_ptr<Kiosk> kiosk;
@@ -41,7 +48,7 @@ public:
 protected:
     void SetUp() override
     {
-        kiosk = std::make_unique<Kiosk>(queue, mock_view, mock_arm, 5, 5);
+        kiosk = std::make_unique<Kiosk>(queue, mock_view, mock_arm, mock_logger, 5, 5);
     }
 };
 

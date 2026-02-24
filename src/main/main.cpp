@@ -50,25 +50,6 @@ int main()
         async_logger.flush(master_token);
     });
 
-
-    std::jthread arm_simulator_thread([&simulator = arm, &master_token]()
-    {
-        while (!master_token.stop_requested())
-        {
-            simulator.move();
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
-    });
-
-    std::jthread user_inactive_watchdog_thread([&monitor = user_inactive_watchdog, &master_token]()
-    {
-        while (!master_token.stop_requested())
-        {
-            monitor.check();
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-        }
-    });
-
     // this initializes the Kiosk
     kiosk.start();
     // 7. Main Logic Loop (The Heartbeat)
@@ -77,6 +58,8 @@ int main()
     {
         while (!master_token.stop_requested())
         {
+            arm.move();
+            user_inactive_watchdog.check();
             kiosk.step();
         }
     }

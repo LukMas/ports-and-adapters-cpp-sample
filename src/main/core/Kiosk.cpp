@@ -20,29 +20,31 @@ void Kiosk::step()
 {
     auto cmd = m_queue.pop();
 
-    IKioskState& nextState = m_currentState->handleCommand(*this, cmd);
-    if (&nextState != m_currentState)
+    if (cmd.has_value())
     {
-        m_log.log(
-            "Transition: " +
-            to_string(m_currentState->getStatus()) +
-            " into " +
-            to_string(nextState.getStatus()));
+        IKioskState& nextState = m_currentState->handleCommand(*this, cmd.value());
+        if (&nextState != m_currentState)
+        {
+            m_log.log(
+                "Transition: " +
+                to_string(m_currentState->getStatus()) +
+                " into " +
+                to_string(nextState.getStatus()));
 
-        // state changes...
-        m_currentState = &nextState;
+            // state changes...
+            m_currentState = &nextState;
 
-        // Information broadcasting
-        m_view.notifyMessage(m_currentState->getMessage());
-        // send the new status to all the listeners,
-        this->notifyListeners(m_currentState->getStatus());
-    }
-    else
-    {
-        m_log.log(
-            "No transition for: " +
-            to_string(m_currentState->getStatus()));
-
+            // Information broadcasting
+            m_view.notifyMessage(m_currentState->getMessage());
+            // send the new status to all the listeners,
+            this->notifyListeners(m_currentState->getStatus());
+        }
+        else
+        {
+            m_log.log(
+                "No transition for: " +
+                to_string(m_currentState->getStatus()));
+        }
     }
 }
 

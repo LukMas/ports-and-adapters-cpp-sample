@@ -4,7 +4,7 @@
 
 #ifndef GRABSTATION_KIOSKQUEUE_H
 #define GRABSTATION_KIOSKQUEUE_H
-#include <mutex>
+#include <optional>
 #include <queue>
 
 #include "commands/KioskCommand.h"
@@ -19,7 +19,7 @@ public:
 
     virtual void push(KioskCommand cmd) = 0;
 
-    virtual KioskCommand pop() = 0;
+    virtual std::optional<KioskCommand> pop() = 0;
 };
 
 #endif //GRABSTATION_KIOSKQUEUE_H

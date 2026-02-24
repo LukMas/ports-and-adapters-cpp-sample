@@ -12,7 +12,7 @@
 class MockQueue : public ICommandQueue
 {
     MOCK_METHOD(void, push, (KioskCommand cmd), (override));
-    MOCK_METHOD(KioskCommand, pop, (), (override));
+    MOCK_METHOD(std::optional<KioskCommand>, pop, (), (override));
 };
 
 // now I write the test base class, that uses the mocks to create a kiosk
@@ -20,12 +20,10 @@ class SimulatedArmTest : public ::testing::Test
 {
 public:
     MockQueue queue;
-    std::unique_ptr<SimulatedArm> simulated_arm;
 
 protected:
     void SetUp() override
     {
-        simulated_arm = std::make_unique<SimulatedArm>();
     }
 };
 
@@ -33,32 +31,32 @@ protected:
 // testing
 TEST_F(SimulatedArmTest, MovementOnX_Axis)
 {
-    simulated_arm->setDestination(Coordinate(5, 0));
+    std::unique_ptr<SimulatedArm> simulated_arm = std::make_unique<SimulatedArm>();
+    simulated_arm->setDestination(Coordinate(5.0f, 0.0f));
 
-    EXPECT_EQ(simulated_arm->getCurrentPosition().x, 0);
+    EXPECT_EQ(static_cast<int>(std::round(simulated_arm->getCurrentPosition().x)), 0);
 
-    simulated_arm->move();
-    simulated_arm->move();
-    simulated_arm->move();
-    simulated_arm->move();
-    simulated_arm->move();
+    while (!simulated_arm->hasReachedTarget())
+    {
+        simulated_arm->move();
+    }
 
-    EXPECT_EQ(simulated_arm->getCurrentPosition().x, 5);
+    EXPECT_EQ(static_cast<int>(std::round(simulated_arm->getCurrentPosition().x)), 5);
 }
 
 
 // testing
 TEST_F(SimulatedArmTest, MovementOnY_Axis)
 {
-    simulated_arm->setDestination(Coordinate(0, 5));
+    std::unique_ptr<SimulatedArm> simulated_arm = std::make_unique<SimulatedArm>();
+    simulated_arm->setDestination(Coordinate(0.0f, 5.0f));
 
-    EXPECT_EQ(simulated_arm->getCurrentPosition().x, 0);
+    EXPECT_EQ(static_cast<int>(std::round(simulated_arm->getCurrentPosition().y)), 0);
 
-    simulated_arm->move();
-    simulated_arm->move();
-    simulated_arm->move();
-    simulated_arm->move();
-    simulated_arm->move();
+    while (!simulated_arm->hasReachedTarget())
+    {
+        simulated_arm->move();
+    }
 
-    EXPECT_EQ(simulated_arm->getCurrentPosition().y, 5);
+    EXPECT_EQ(static_cast<int>(std::round(simulated_arm->getCurrentPosition().y)), 5);
 }

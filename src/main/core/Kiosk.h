@@ -6,6 +6,7 @@
 #define GRABSTATION_KIOSK_H
 
 #pragma once
+#include <cmath>
 #include <iostream>
 #include <optional>
 
@@ -50,7 +51,6 @@ class Kiosk
 
     int m_rows;
     int m_cols;
-
 
 
     /**
@@ -138,7 +138,8 @@ public:
     [[nodiscard]] std::optional<Coordinate> validateCoordinates(Coordinate currentCoordinates) const
     {
         // checking against grid size
-        if (currentCoordinates.x > m_cols || currentCoordinates.y > m_rows)
+        if (static_cast<int>(std::round(currentCoordinates.x)) > m_cols ||
+            static_cast<int>(std::round(currentCoordinates.y)) > m_rows)
         {
             std::cout << "Too big coordinates. " << std::endl;
             std::cout << "Actual size: " << m_cols << " and " << m_rows << ". " << std::endl;
