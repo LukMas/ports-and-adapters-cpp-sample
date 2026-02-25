@@ -1,73 +1,72 @@
-# Robotic Kiosk: Ports & Adapters Architecture (C++20)
+# Ports & Adapters C++ Sample – Robotic Kiosk
 
-This project is a high-fidelity C++ implementation of a robotic kiosk system using **Hexagonal Architecture** (Ports 
-and Adapters). It demonstrates how to build a hardware-independent core system that is highly testable and thread-safe.
+This project demonstrates a C++20 implementation of a robotic kiosk system using Hexagonal Architecture (Ports & Adapters). It showcases a hardware-independent, modular core system designed for testability, concurrency and maintainability.
 
-## 🏗 Architecture
+## Architecture Overview
 
-The system is designed with a strict "Inside-Out" dependency rule:
+**Inside-Out Dependency Rule:**
 
-- **Core (Domain):** The "Brain" of the kiosk. It manages state transitions (Waiting, Moving, Picking) and 
-  translates string inputs (like "A1") into grid coordinates.
-- **Ports (Interfaces):** Abstract contracts (`IArmPort`, `IViewPort`) that define how the Core communicates with 
-  the outside world.
-- **Adapters (Infrastructure):** - **SimulatedArm:** A multithreaded simulation of a robotic arm.
-    - **MockArm:** A GoogleMock-based implementation for unit testing logic without hardware.
+- **Core (Domain)**: The "brain" of the kiosk. Manages states (Waiting, Moving, Picking) and translates inputs (like "A1") into grid coordinates.
 
+- **Ports (Interfaces)**: Abstract contracts (IArmPort, IViewPort) defining communication between core logic and external systems.
 
+- **Adapters (Infrastructure)**:
+  - SimulatedArm: Multithreaded robotic arm simulation.
+  - MockArm: Google Mock implementation for unit testing without real hardware.
 
-## 🧵 Threading & Concurrency
+*Diagram (ASCII):*
 
-The project utilizes modern **C++20** features to handle asynchronous hardware simulation:
+```
+[Adapters] <---- [Ports] <---- [Core Domain Logic]
+   SimArm       IArmPort       KioskStateMachine
+   MockArm      IViewPort      Input Parsing / Decision Logic
+```
 
-- **`std::jthread`:** Ensures the simulation thread is automatically joined on destruction (RAII).
-- **`std::stop_token`:** Provides a clean way to signal the arm to stop immediately during application shutdown.
-- **`std::condition_variable_any`:** Implements an event-driven model. The arm thread sleeps and consumes **0% CPU** 
-  until a new destination is provided, at which point it wakes up instantly.
-- **Thread Safety:** All shared data between the Kiosk thread and the Arm thread is synchronized using `std::mutex` 
-  and `std::lock_guard`.
+## Concurrency & Thread Safety
 
+- **std::jthread** for automatic thread joining (RAII)
+- **std::stop_token** for clean stop signaling
+- **std::condition_variable_any** for event-driven updates
+- **std::mutex** + **std::lock_guard** for safe shared data access
 
+Key idea: The core logic is thread-safe and can handle asynchronous events without blocking CPU cycles unnecessarily.
 
-## 🧪 Testing Strategy
+## Testing Strategy
 
-By using the Ports and Adapters pattern, the system can be tested in isolation:
+- **Logic Tests**: Google Mock verifies correct coordinate calculation and arm triggering.
+- **State Tests**: Ensures valid state transitions only occur on correct inputs.
+- **Fast & Deterministic**: Tests use mocks instead of real-time simulation, running in milliseconds.
 
-- **Logic Testing:** We use **Google Mock** to verify that the Kiosk logic correctly calculates coordinates and 
-  triggers the arm.
-- **State Testing:** We verify that the Kiosk moves from `WaitingState` to `MovingState` only when valid input is 
-  received.
-- **Deterministic Results:** Tests run in milliseconds because they use "hollow" mocks rather than waiting for the 
-  real-time simulation.
+## Features Demonstrated
 
+- Modern C++20 practices (jthread, stop_token, RAII, concurrency primitives)
+- Dependency Injection for testable adapters
+- Event-driven architecture in a simulated hardware environment
+- Unit tests for both domain logic and integration with adapters
 
+## Usage
 
-## 🤖 AI-Augmented Development
+Build:
 
-This project was developed using an **AI-Collaborative workflow**, where AI (specifically Google Gemini) served as a 
-"digital pair-programmer." A primary goal of this approach was to **refresh and modernize C++ expertise** by 
-applying C++20 standards to a real-world architectural challenge.
+```
+mkdir build && cd build
+cmake ..
+make
+```
 
-The AI was utilized for:
+Run Simulation:
 
-- **Concurrency Design:** Applied modern C++20 threading patterns, specifically the integration of `std::jthread` 
-  with `std::condition_variable_any` for efficient, event-driven simulation.
-- **Unit Test Generation:** Designed and implemented Google Mock objects and test fixtures to ensure coverage of the 
-  logic sections.
-- **Documentation:** Authored technical guides and this README to communicate the system's design clearly.
+```
+./kiosk_simulator
+```
 
-This collaboration allowed for rapid prototyping and the immediate application of modern C++ best practices, 
-ensuring the code is not only functional but also aligned with contemporary industry standards.
+Run Tests:
 
-## 📂 Project Structure
+```
+ctest --output-on-failure
+```
 
-```text
-.
-├── src/
-│   ├── core/           # Kiosk.cpp, State Machine logic
-│   ├── ports/          # IArmPort.h, IViewPort.h (Interfaces)
-│   ├── adapters/       # SimulatedArm.cpp (C++20 Threaded Sim)
-│   └── util/           # Coordinate.h, CommandQueue.h
-├── tests/              # GTest suites (test_Kiosk.cpp)
-└── main.cpp            # Composition root (wiring it all together)
+## Why This Project Matters
 
+This sample shows how to structure a maintainable C++ system where domain logic is isolated from hardware, concurrency is handled safely, and testing is straightforward. 
+It’s directly relevant to control systems, robotics, and embedded-like environments — all key areas in automation industries.
