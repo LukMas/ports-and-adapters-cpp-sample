@@ -56,11 +56,19 @@ int main()
     // This runs in the main thread
     try
     {
+        using clock = std::chrono::steady_clock;
+
+        constexpr auto cyclePeriod = std::chrono::milliseconds(10); // 100 Hz "scan"
+        auto nextTick = clock::now() + cyclePeriod;
+
         while (!master_token.stop_requested())
         {
             arm.move();
             user_inactive_watchdog.check();
             kiosk.step();
+
+            std::this_thread::sleep_until(nextTick);
+            nextTick += cyclePeriod;
         }
     }
 
